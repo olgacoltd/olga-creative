@@ -46,7 +46,9 @@ access to gitlab.com, 7-zip.org, an MSYS2 mirror, download.gimp.org and github.c
 
 Downloads are capped at 2 MB/s in total so a build never saturates the line (`OLGA_DOWNLOAD_RATE`, e.g. `500K`,
 `0` = no cap). Large files are fetched in parallel byte ranges and MSYS2 packages with parallel connections
-(within the same cap), every piece resumable: this keeps a build moving on a lossy line.
+(within the same cap), every piece resumable: this keeps a build moving on a lossy line. Not capped: pacman's
+own database sync and MSYS2 base-system update (a few hundred MB; a capped curl downloader for pacman made the
+database signature checks fail).
 
 Clone or copy this repo to `<root>\olga-creative` (when copying over an older copy, remove the old
 `branding`, `windows` and `tools` folders first so a renamed or deleted patch does not linger), then:

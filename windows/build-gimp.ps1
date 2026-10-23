@@ -230,7 +230,10 @@ if (-not (Test-Path (Join-Path $build 'build.ninja'))) {
 # ---------------------------------------------------------------- 5. compile
 Write-Step "build: ninja -j $Jobs"
 $tb = Get-Date
-Invoke-Msys $msys ($envSh + "`nninja -C '$b' -j $Jobs") $null $M
+# The pdbgen step rewrites libgimp/*_pdb.h in the source tree; on Windows a compile that includes one of them
+# at that moment fails with "Permission denied". Build that stamp first, then everything else.
+$pdbFirst = "t=`$(ninja -C '$b' -t targets all | grep -o '^[^:]*stamp-pdbgen[^:]*' | head -1); if [ -n `"`$t`" ]; then ninja -C '$b' -j $Jobs `"`$t`"; fi"
+Invoke-Msys $msys ($envSh + "`n" + $pdbFirst + "`nninja -C '$b' -j $Jobs") $null $M
 Write-Step ("build: done in {0:N1} min" -f ((Get-Date) - $tb).TotalMinutes)
 
 # ---------------------------------------------------------------- 6. install + bundle
