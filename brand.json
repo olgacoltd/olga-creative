@@ -1,7 +1,7 @@
 {
   "_comment": "Single source of the product brand. Placeholder names; the owner renames before launch. Rebuild after editing (build-inkscape.ps1 re-applies branding and recompiles only what changed).",
   "vendor": "Olga",
-  "url": "https://inkscape.org",
+  "url": "https://github.com/olgacoltd/olga-creative",
   "colors": {
     "primary": "#1E3A5F",
     "accent": "#F0B44C",
