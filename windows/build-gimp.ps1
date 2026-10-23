@@ -14,7 +14,8 @@
     5. configure            meson, only when build.ninja is missing or the branding changed
     6. compile              ninja (incremental; the build dir is kept)
     7. install + bundle     ninja install runs upstream's bundling script -> <Root>\build\gimp\<id>, then the
-                            bundle-level artwork (splash, About logo) is branded
+                            Resynthesizer plug-ins are built against it and added, and the bundle-level artwork
+                            (splash, About logo) is branded
     8. package              portable zip (+ Inno Setup installer, Inno unpacked per-user under <Root>\tools)
     9. smoke test           smoke-test-gimp.ps1 (console app only, no GUI)
 
@@ -39,13 +40,17 @@ param(
     [string]$Exiv2Version = '0.28.8',
     [string]$Exiv2MsysRel = '1',
     [string]$Exiv2Sha256 = '1599a4d6d4a4fd28038b845d1a677f028646d120130d72151ed23931cc707a36',
+    # Resynthesizer (content-aware heal / fill plug-ins, GPL-3.0), the GIMP 3 line of github.com/bootchk/resynthesizer
+    [string]$ResynthVersion = '3.0.1',
+    [string]$ResynthSha256 = 'bc88ca6c36e15d518039a670b68ab1b7035ae2721ba2b51ca6174fe6527b9069',
     [string]$Mirror = '',            # MSYS2 mirror tried first (see setup-msys2.ps1)
     [int]$Jobs = 0,
     [switch]$Clean,
     [switch]$CleanDeps,
     [switch]$FetchOnly,
     [switch]$NoInstaller,
-    [switch]$NoSmokeTest
+    [switch]$NoSmokeTest,
+    [switch]$NoResynthesizer
 )
 . "$PSScriptRoot\common.ps1"
 $t0 = Get-Date
@@ -76,7 +81,8 @@ $tarballs = @(
     @{ name = 'gimp';  file = "gimp-$GimpVersion.tar.xz";  sha = $GimpSha256; url = "https://download.gimp.org/gimp/v$gimpMinor/gimp-$GimpVersion.tar.xz" },
     @{ name = 'babl';  file = "babl-$BablVersion.tar.xz";  sha = $BablSha256; url = "https://download.gimp.org/babl/$((($BablVersion -split '\.')[0..1]) -join '.')/babl-$BablVersion.tar.xz" },
     @{ name = 'gegl';  file = "gegl-$GeglVersion.tar.xz";  sha = $GeglSha256; url = "https://download.gimp.org/gegl/$((($GeglVersion -split '\.')[0..1]) -join '.')/gegl-$GeglVersion.tar.xz" },
-    @{ name = 'exiv2'; file = "mingw-w64-exiv2-$Exiv2Version-$Exiv2MsysRel.src.tar.zst"; sha = $Exiv2Sha256; url = "$msysRepo/mingw/sources/mingw-w64-exiv2-$Exiv2Version-$Exiv2MsysRel.src.tar.zst" }
+    @{ name = 'exiv2'; file = "mingw-w64-exiv2-$Exiv2Version-$Exiv2MsysRel.src.tar.zst"; sha = $Exiv2Sha256; url = "$msysRepo/mingw/sources/mingw-w64-exiv2-$Exiv2Version-$Exiv2MsysRel.src.tar.zst" },
+    @{ name = 'resynthesizer'; file = "resynthesizer-$ResynthVersion.tar.gz"; sha = $ResynthSha256; url = "https://github.com/bootchk/resynthesizer/archive/refs/tags/v$ResynthVersion.tar.gz" }
 )
 Write-Step 'sources: release tarballs'
 foreach ($t in $tarballs) {
@@ -175,7 +181,7 @@ Build-Dep 'exiv2' "mingw-w64-exiv2-$Exiv2Version-$Exiv2MsysRel.src.tar.zst" "exi
 # ---------------------------------------------------------------- 3. branding
 $bdir = Join-Path $RepoRoot 'branding\gimp'
 $patches = @(Get-ChildItem (Join-Path $bdir 'patches') -Filter '*.patch' | Sort-Object Name)
-$hashInputs = @($patches | ForEach-Object { $_.FullName }) + @((Join-Path $bdir 'apply-branding.py'), (Join-Path $RepoRoot 'brand.json')) +
+$hashInputs = @($patches | ForEach-Object { $_.FullName }) + @((Join-Path $bdir 'apply-branding.py'), (Join-Path $bdir 'zh_TW-terms.csv'), (Join-Path $RepoRoot 'brand.json')) +
     @(Get-ChildItem -Recurse -File (Join-Path $bdir 'defaults') | Sort-Object FullName | ForEach-Object { $_.FullName })
 $sha = [Security.Cryptography.SHA256]::Create()
 $acc = New-Object System.Text.StringBuilder
@@ -243,9 +249,55 @@ $bundleSrc = Join-Path $src 'gimp-clang64'
 $bundle = Join-Path $bRoot $g.id
 foreach ($d in @($bundleSrc, $bundle)) { Remove-Tree $d }
 Write-Step 'install + bundle (ninja install)'
+# GIMP's own folders in the prefix are re-installed from scratch: `ninja install` never deletes, so a data
+# file the branding removed (or a plug-in left out) would otherwise still reach the bundle from an older run
+foreach ($d in @('share\gimp', 'lib\gimp', 'etc\gimp')) { Remove-Tree (Join-Path $prefix $d) }
 Invoke-Msys $msys ($envSh + "`nninja -C '$b' install > '$b/ninja-install.log' 2>&1 || { tail -40 '$b/ninja-install.log'; exit 1; }") $null $M
 if (-not (Test-Path (Join-Path $bundleSrc "bin\$($g.id).exe"))) { throw "bundle incomplete: $bundleSrc\bin\$($g.id).exe missing" }
 Move-Item $bundleSrc $bundle
+
+# ---------------------------------------------------------------- 6b. Resynthesizer plug-ins
+# Built against the libgimp just installed into the prefix (like any third-party plug-in) and installed there;
+# its plug-in folders are then copied into the bundle (the installer packs lib\gimp\3.0\plug-ins\* as is).
+if (-not $NoResynthesizer) {
+    Write-Step "Resynthesizer $ResynthVersion (Filters > Enhance > Heal Selection and related)"
+    $rsrc = Join-Path $srcParent "resynthesizer-$ResynthVersion"
+    $rbuild = Join-Path $bRoot 'dep-resynthesizer'
+    if (-not (Test-Path (Join-Path $rsrc '.olga-extracted'))) {
+        foreach ($d in @($rsrc, $rbuild)) { Remove-Tree $d }
+        $tf = ConvertTo-MsysPath (Join-Path $dl "resynthesizer-$ResynthVersion.tar.gz")
+        Invoke-Msys $msys "cd '$(ConvertTo-MsysPath $srcParent)' && { tar -xf '$tf' 2>/dev/null || tar -xf '$tf'; }" $null $M
+        if (-not (Test-Path (Join-Path $rsrc 'meson.build'))) { throw "unexpected archive layout: $rsrc\meson.build missing" }
+        Set-Content -Path (Join-Path $rsrc '.olga-extracted') -Value (Get-Date -Format o)
+    }
+    $rb = ConvertTo-MsysPath $rbuild
+    $rcfg = ''
+    if (-not (Test-Path (Join-Path $rbuild 'build.ninja'))) {
+        $rcfg = "meson setup '$rb' '$(ConvertTo-MsysPath $rsrc)' -Dprefix='$winPrefix' -Dbuildtype=release`n"
+    }
+    Invoke-Msys $msys ($envSh + "`n" + $rcfg + "ninja -C '$rb' -j $Jobs install") $null $M
+    $plugSrc = Join-Path $prefix 'lib\gimp\3.0\plug-ins'
+    $plugDst = Join-Path $bundle 'lib\gimp\3.0\plug-ins'
+    $names = @('resynthesizer') + @(Get-ChildItem (Join-Path $rsrc 'outerPlugins') -Filter '*.scm' | ForEach-Object { $_.BaseName })
+    $copied = @()
+    foreach ($n in $names) {
+        $d = Join-Path $plugSrc $n
+        if (Test-Path (Join-Path $d "$n.*")) { Copy-Item -Recurse -Force $d $plugDst; $copied += $n }
+    }
+    if ($copied -notcontains 'resynthesizer' -or $copied -notcontains 'plug-in-heal-selection') {
+        throw "Resynthesizer: plug-ins missing after install (got: $($copied -join ', '))"
+    }
+    Write-Output "  plug-ins: $($copied -join ', ')"
+    foreach ($f in 'COPYING', 'AUTHORS') { Copy-Item (Join-Path $rsrc $f) (Join-Path $plugDst "resynthesizer\$f") }
+    $notice = Join-Path $bundle 'NOTICE.txt'
+    $nl = "`n"
+    if ([IO.File]::ReadAllText($notice).Contains("`r`n")) { $nl = "`r`n" }
+    [IO.File]::AppendAllText($notice, ($nl +
+        "The content-aware healing filters (Filters > Enhance > Heal Selection, Heal Transparency, Uncrop and" + $nl +
+        "related) are Resynthesizer $ResynthVersion by Lloyd Konneker and contributors" + $nl +
+        "(https://github.com/bootchk/resynthesizer), GNU General Public License, version 3; see" + $nl +
+        "lib\gimp\3.0\plug-ins\resynthesizer\COPYING." + $nl), (New-Object Text.UTF8Encoding($false)))
+}
 $py = "'$(ConvertTo-MsysPath (Join-Path $bdir 'apply-branding.py'))' bundle '$(ConvertTo-MsysPath $bundle)' '$(ConvertTo-MsysPath (Join-Path $RepoRoot 'brand.json'))' '$b'"
 Invoke-Msys $msys "/clang64/bin/python -I $py" $null $M
 foreach ($f in 'COPYING', 'LICENSE', 'NOTICE.txt', "$($g.id).cmd") {
@@ -270,6 +322,9 @@ try {
     }
 } finally { $za.Dispose() }
 Write-Output ("  {0:N0} MB" -f ((Get-Item $zip).Length / 1MB))
+# the zh_TW wording review sheet written by apply-branding.py (for staff, next to the packages)
+$sheet = Join-Path $src 'po\olga-zh_TW-terms-review.md'
+if (Test-Path $sheet) { Copy-Item -Force $sheet (Join-Path $dist ("{0}-{1}-zh_TW-terms-review.md" -f $g.id, $verTag)) }
 
 if (-not $NoInstaller) {
     try {
@@ -281,7 +336,7 @@ if (-not $NoInstaller) {
 
 # ---------------------------------------------------------------- 8. smoke test
 if (-not $NoSmokeTest) {
-    & "$PSScriptRoot\smoke-test-gimp.ps1" -Root $Root
+    & "$PSScriptRoot\smoke-test-gimp.ps1" -Root $Root -GimpVersion $GimpVersion -NoResynthesizer:$NoResynthesizer
 }
 
 $mine = @('msys64-gimp', 'src', 'build', 'ccache', 'downloads', 'tools', 'dist', 'smoke-gimp') | ForEach-Object { Join-Path $Root $_ } | Where-Object { Test-Path $_ }

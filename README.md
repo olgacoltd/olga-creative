@@ -22,14 +22,16 @@ branding/inkscape/apply-branding.py  data-level branding: keymap, zh_TW/en strin
 branding/gimp/patches/            GIMP source patches (brand-neutral: meson options -Dolga-brand-* filled from brand.json)
 branding/gimp/apply-branding.py   GIMP data-level branding: defaults, zh_TW/en strings, logos/icons, splash, installer art
 branding/gimp/defaults/           Photoshop-style default shortcuts/layout/toolbox/tool options/templates (mostly PhotoGIMP, GPL-3.0)
+branding/gimp/zh_TW-terms.csv     zh_TW wording table (GIMP's term -> the term Photoshop users know), applied at build time
 branding/gimp/deps/               the exiv2 patch upstream GIMP CI applies
 windows/setup-msys2.ps1           non-admin MSYS2 toolchains: UCRT64 for Inkscape (upstream CI's frozen snapshot),
                                   CLANG64 for GIMP (rolling, like upstream GIMP CI)
 windows/build-inkscape.ps1        clone -> brand -> cmake/ninja -> install -> zip (+ NSIS installer) -> smoke test
 windows/smoke-test-inkscape.ps1   headless: --version, profile dir, Chinese SVG -> PDF + PNG
-windows/build-gimp.ps1            tarballs -> babl/GEGL/exiv2 -> brand -> meson/ninja -> bundle -> zip (+ Inno) -> smoke test
+windows/build-gimp.ps1            tarballs -> babl/GEGL/exiv2 -> brand -> meson/ninja -> bundle (+ Resynthesizer) -> zip (+ Inno) -> smoke test
 windows/package-gimp-installer.ps1  Inno Setup installer (Inno unpacked per-user under the build root)
-windows/smoke-test-gimp.ps1       headless: --version (en/zh_TW), Python batch PNG -> PNG/JPG, profile seeding, catalogs
+windows/smoke-test-gimp.ps1       headless: --version (en/zh_TW), Python batch PNG -> PNG/JPG, Heal Selection, profile seeding,
+                                  catalogs + zh_TW terms + msgfmt --check, default shortcuts, mascot artwork gone
 windows/run-detached.ps1          start a build detached from ssh, with keep-awake and a log file
 windows/keepawake-run.ps1         (internal) keep-awake wrapper used by run-detached.ps1
 windows/cleanup.ps1               remove everything the pipeline created on a build machine
@@ -161,19 +163,21 @@ so `ninja install` runs upstream's bundling script, then Inno Setup. Upstream CI
 | MSYS2 | `<root>\msys64-gimp\.olga-base` exists; deps when the package list is unchanged | `<root>\msys64-gimp` |
 | Tarballs | `<file>.sha256-ok` exists (downloads resume) | `<root>\downloads` |
 | babl, GEGL, exiv2 | `<root>\build\gimp\_install\.olga-dep-*` exists (`-CleanDeps` rebuilds) | `<root>\build\gimp\dep-*` |
-| Branding | stamp = hash(version, patches, apply-branding.py, defaults, brand.json) unchanged; the tree is reset via a baseline git repo kept *outside* it (`<root>\src\gimp-<ver>.git`) | `<root>\src\gimp-<ver>` |
+| Branding | stamp = hash(version, patches, apply-branding.py, zh_TW-terms.csv, defaults, brand.json) unchanged; the tree is reset via a baseline git repo kept *outside* it (`<root>\src\gimp-<ver>.git`) | `<root>\src\gimp-<ver>` |
 | Configure / compile | as for Inkscape (`-Clean` = full recompile) | `<root>\build\gimp\build` |
+| Resynthesizer | extracted once; meson/ninja incremental, `-NoResynthesizer` leaves it out | `<root>\build\gimp\dep-resynthesizer` |
 | Bundle, package, smoke test | always re-run | `<root>\build\gimp\<id>`, `<root>\dist`, `<root>\smoke-gimp` |
 
 Outputs: `<root>\dist\<id>-<version>-win64-portable.zip` (unzip anywhere, run `<id>\<id>.cmd` or
 `<id>\bin\<id>.exe`; debug symbols left out) and `<root>\dist\<id>-<version>-setup.exe` (Inno Setup, per-user
-install by default, admin install offered).
+install by default, admin install offered), plus `<root>\dist\<id>-<version>-zh_TW-terms-review.md`, the
+before/after sheet of the zh_TW wording for staff review.
 
 Source patches (`branding/gimp/patches`, all brand-neutral; the values come from meson `-Dolga-brand-*`):
 
 1. `0001` brand options -> `OLGA_BRAND_*` in `config.h` and the resource templates.
 2. `0002` product name instead of GIMP's in window titles, About (name, version, "Based on GIMP ..." credit, link)
-   and `--version` (`OlgaPhoto version 3.2.6-olga1 (based on GIMP 3.2.6)`); application id `tw.olga.OlgaPhoto`;
+   and `--version` (`OlgaPhoto version 3.2.6-olga2 (based on GIMP 3.2.6)`); application id `tw.olga.OlgaPhoto`;
    brand-specific single-instance window class and process mutex, so a real GIMP running next to it never
    receives this app's files (and the installer does not wait for a running GIMP).
 3. `0003` exe version resources (product, vendor, version, credit), branded copies `<id>.exe` /
@@ -184,6 +188,11 @@ Source patches (`branding/gimp/patches`, all brand-neutral; the values come from
    own (and again after "reset shortcuts"); a brand-new profile is seeded from `etc/gimp/3.0/defaults/`.
 5. `0005` installer: names, AppId/mutex, install folder, uninstall/registry keys, ProgIds, App Paths, links,
    licence files; per-user profile removal on uninstall points at the brand's folder.
+6. `0006` Layer > Group Layers / Ungroup Layers: puts the selected layers (multi-selection, stacking order kept)
+   into a new group at the place of the topmost one, or moves a group's layers out and removes the group; one
+   undo step each. Bound to Ctrl+G / Ctrl+Shift+G by the default shortcuts (Ctrl+G was the Gradients dialog).
+7. `0007` the empty canvas (and the optional toolbox artwork) draws a plain brand-neutral mark instead of
+   GIMP's mascot.
 
 Build options (not patches): own profile folder `%APPDATA%\<nameAscii>\3.2` (`-Dgimpdir`, upstream option, so an
 installed GIMP's settings never override ours and the two never share settings), `-Dcheck-update=no` (no "new
@@ -195,13 +204,24 @@ single-window Photoshop-style layout, toolbox grouping and shortcuts mostly from
 templates for shop / social / print sizes), zh_TW catalogs of every GIMP text domain and a generated
 `po/en.po` (kept as "GIMP": credits, licence, links, GIMP help/manual, version history, file/resource format
 names), logo SVGs and the committed `.ico` files (the build renders the About logo, app/file icons and installer
-icons from them), and on the finished bundle the splash screen and the installer splash/banner bitmaps.
+icons from them), every other mascot picture (Default/Legacy icon themes incl. the error icon, the splash easter
+egg; the mascot brush is not shipped), and on the finished bundle the splash screen and the installer
+splash/banner bitmaps. The zh_TW wording table `branding/gimp/zh_TW-terms.csv` (context, English text, GIMP's
+current wording, new wording, why) is applied to `po/zh_TW.po` after the brand rename: a row whose current
+wording no longer matches upstream, a missing or extra menu mnemonic, or changed format specifiers stop the
+build, and the catalog must pass `msgfmt --check`. Edit the table and rebuild to change the wording.
+
+Bundled plug-in: **Resynthesizer** (GPL-3.0, <https://github.com/bootchk/resynthesizer>, the GIMP 3 line,
+tag pinned with SHA-256 in `build-gimp.ps1`): Filters > Enhance > Heal Selection (content-aware fill),
+Heal Transparency, Uncrop, Map > Style, Render > Texture and related. It is built against the app's libgimp after
+the bundle is made and copied into `lib\gimp\3.0\plug-ins`; its `COPYING` sits next to it and
+`NOTICE.txt` credits it. Its menu texts are English (it ships no zh_TW translation).
 
 ## Known issues / not done
 
-- GIMP-based app: in-app icon theme pictures of Wilber (GIMP's mascot) are kept (the toolbox Wilber is hidden
-  by default); the "GIMP Online" / help menus still point at gimp.org (that is GIMP's documentation); English
-  installer texts outside the translation catalogs may still say GIMP.
+- GIMP-based app: the "GIMP Online" / help menus still point at gimp.org (that is GIMP's documentation); English
+  installer texts outside the translation catalogs may still say GIMP; icon *names* (`gimp-wilber`) are kept,
+  only the pictures are replaced; the GEGL goat brush (`Fun` tag) is kept.
 - `inkview.exe` (the slideshow viewer) keeps its upstream name.
 - GTK icon *names* (`org.inkscape.Inkscape`) are kept; only the pixels are replaced.
 - Strings without "Inkscape" in them that describe Inkscape-specific things are untouched; English UI text
