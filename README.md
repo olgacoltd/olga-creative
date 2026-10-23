@@ -36,7 +36,8 @@ default `C:\olga-build`; on A it is `F:\olga-build`) plus two small per-user fol
 (`%APPDATA%\<id>`, `%LOCALAPPDATA%\<id>`). Needs ~25 GB free and internet access to gitlab.com and 7-zip.org.
 
 Copy the repo to `<root>\olga-creative` (it has no remote; e.g. from B:
-`tar cf - brand.json branding windows tools | ssh <box> "cd /d <root>\olga-creative && tar xf -"`), then:
+`tar cf - brand.json branding windows tools | ssh <box> "cd /d <root>\olga-creative && rmdir /s /q branding windows tools & tar xf -"`;
+remove the old folders first so a renamed or deleted patch does not linger), then:
 
 ```powershell
 # on the build box (or through ssh), detached so a dropped ssh session does not kill it:
