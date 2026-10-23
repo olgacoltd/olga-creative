@@ -17,11 +17,22 @@ if (Test-Path $out) { Remove-Item -Recurse -Force $out }
 Ensure-Dir $out
 Write-Step "smoke test: $com"
 
-$version = (& $com --version 2>&1 | Out-String).Trim()
+# Run the app with stdout/stderr going to files (PowerShell 5.1 would wrap stderr lines into error records)
+function Invoke-App([string]$tag, [string[]]$argv) {
+    $o = Join-Path $out "$tag.out.txt"; $e = Join-Path $out "$tag.err.txt"
+    $quoted = $argv | ForEach-Object { if ($_ -match '\s') { '"' + $_ + '"' } else { $_ } }
+    $p = Start-Process -FilePath $com -ArgumentList $quoted -NoNewWindow -Wait -PassThru `
+        -RedirectStandardOutput $o -RedirectStandardError $e
+    $script:lastRc = $p.ExitCode
+    return ([IO.File]::ReadAllText($o)).Trim()
+}
+
+$version = (Invoke-App 'version' @('--version')) -split "`n" | Where-Object { $_ -like "$($ink.name) *" } | Select-Object -First 1
+if (-not $version) { $version = (Get-Content (Join-Path $out 'version.out.txt') -Raw) }
 Set-Content -Path (Join-Path $out 'version.txt') -Value $version -Encoding UTF8
 Write-Output "  --version: $version"
-$userDir = (& $com --user-data-directory 2>$null | Out-String).Trim()
-$sysDir = (& $com --system-data-directory 2>$null | Out-String).Trim()
+$userDir = Invoke-App 'userdir' @('--user-data-directory')
+$sysDir = Invoke-App 'sysdir' @('--system-data-directory')
 Set-Content -Path (Join-Path $out 'dirs.txt') -Value "user=$userDir`nsystem=$sysDir" -Encoding UTF8
 Write-Output "  profile: $userDir"
 
@@ -41,10 +52,10 @@ $svgPath = Join-Path $out 'cjk.svg'
 
 $pdf = Join-Path $out 'cjk.pdf'
 $png = Join-Path $out 'cjk.png'
-& $com $svgPath --export-type=pdf --export-filename=$pdf 2>&1 | Out-File -Encoding utf8 (Join-Path $out 'export-pdf.log')
-$pdfRc = $LASTEXITCODE
-& $com $svgPath --export-type=png --export-dpi=96 --export-filename=$png 2>&1 | Out-File -Encoding utf8 (Join-Path $out 'export-png.log')
-$pngRc = $LASTEXITCODE
+[void](Invoke-App 'export-pdf' @($svgPath, '--export-type=pdf', "--export-filename=$pdf"))
+$pdfRc = $lastRc
+[void](Invoke-App 'export-png' @($svgPath, '--export-type=png', '--export-dpi=96', "--export-filename=$png"))
+$pngRc = $lastRc
 
 function SizeOf($f) { if (Test-Path $f) { return (Get-Item $f).Length } else { return 0 } }
 $res = [ordered]@{

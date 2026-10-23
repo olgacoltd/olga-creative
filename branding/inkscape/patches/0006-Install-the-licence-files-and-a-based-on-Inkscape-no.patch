@@ -1,0 +1,36 @@
+From 5fb48c363ce1e16ea8a92220e4f26e60c229f4bf Mon Sep 17 00:00:00 2001
+From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
+Date: Fri, 23 Oct 2026 18:42:15 +0800
+Subject: [PATCH] Install the licence files and a based-on-Inkscape notice
+
+---
+ CMakeScripts/OlgaBrand.cmake | 5 +++++
+ packaging/olga/NOTICE.txt.in | 6 ++++++
+ 2 files changed, 11 insertions(+)
+ create mode 100644 packaging/olga/NOTICE.txt.in
+
+diff --git a/CMakeScripts/OlgaBrand.cmake b/CMakeScripts/OlgaBrand.cmake
+index 0408a99..4dc2d99 100644
+--- a/CMakeScripts/OlgaBrand.cmake
++++ b/CMakeScripts/OlgaBrand.cmake
+@@ -15,3 +15,8 @@ set(OLGA_BRAND_VERSION "${INKSCAPE_VERSION}${OLGA_BRAND_VERSION_SUFFIX}")
+ 
+ configure_file(${CMAKE_SOURCE_DIR}/src/olga-brand.h.in ${CMAKE_BINARY_DIR}/include/olga-brand.h)
+ message("Brand: ${OLGA_BRAND_NAME} ${OLGA_BRAND_VERSION} (${OLGA_BRAND_ID}, ${OLGA_APP_ID})")
++
++# Licence files and the "based on Inkscape" notice go into every package (zip and installer)
++configure_file(${CMAKE_SOURCE_DIR}/packaging/olga/NOTICE.txt.in ${CMAKE_BINARY_DIR}/NOTICE.txt @ONLY)
++install(FILES ${CMAKE_SOURCE_DIR}/COPYING ${CMAKE_BINARY_DIR}/NOTICE.txt DESTINATION .)
++install(DIRECTORY ${CMAKE_SOURCE_DIR}/LICENSES DESTINATION .)
+diff --git a/packaging/olga/NOTICE.txt.in b/packaging/olga/NOTICE.txt.in
+new file mode 100644
+index 0000000..a09e5a1
+--- /dev/null
++++ b/packaging/olga/NOTICE.txt.in
+@@ -0,0 +1,6 @@
++@OLGA_BRAND_NAME@ @OLGA_BRAND_VERSION@
++
++@OLGA_BRAND_NAME@ is based on Inkscape (https://inkscape.org), Copyright (C) the Inkscape developers,
++and is distributed under the GNU General Public License, version 3 or later (see COPYING and LICENSES/).
++The source code of this build, including all changes made to Inkscape, is available from @OLGA_BRAND_VENDOR@:
++@OLGA_BRAND_URL@

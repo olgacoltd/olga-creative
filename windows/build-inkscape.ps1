@@ -144,19 +144,12 @@ Write-Step ("build: done in {0:N1} min" -f ((Get-Date) - $tb).TotalMinutes)
 # ---------------------------------------------------------------- 6. package
 $exe = Join-Path $prefix "bin\$($ink.id).exe"
 if (-not (Test-Path $exe)) { throw "install tree incomplete: $exe missing" }
-# licence + credit next to the program (GPL: keep upstream notices)
-Copy-Item -Force (Join-Path $src 'COPYING') $prefix
-if (Test-Path (Join-Path $src 'LICENSES')) { Copy-Item -Recurse -Force (Join-Path $src 'LICENSES') $prefix }
+# licence + credit are installed by patch 0006 (COPYING, LICENSES\, NOTICE.txt); make sure they are there
+foreach ($f in 'COPYING', 'NOTICE.txt', 'LICENSES') {
+    if (-not (Test-Path (Join-Path $prefix $f))) { throw "licence file missing from the install tree: $f" }
+}
 $inkVer = (Select-String -Path (Join-Path $src 'CMakeLists.txt') -Pattern 'set\(INKSCAPE_VERSION_(MAJOR|MINOR|PATCH)\s+(\d+)' |
     ForEach-Object { $_.Matches[0].Groups[2].Value }) -join '.'
-$notice = @"
-$($ink.name) $inkVer$($ink.versionSuffix)
-
-$($ink.name) is based on Inkscape (https://inkscape.org), Copyright (C) the Inkscape developers,
-and is distributed under the GNU General Public License version 3 or later (see COPYING and LICENSES\).
-Changes to the upstream source: see the branding patches published with this build.
-"@
-[IO.File]::WriteAllText((Join-Path $prefix 'NOTICE.txt'), $notice, (New-Object Text.UTF8Encoding($false)))
 
 $dist = Join-Path $Root 'dist'
 Ensure-Dir $dist

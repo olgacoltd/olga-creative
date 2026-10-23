@@ -113,6 +113,8 @@ Source patches (`branding/inkscape/patches`):
 4. `0004` default preferences: keymap `brand-default.xml`, welcome dialog off, splash on.
 5. `0005` installer: package/vendor/start-menu names, install dir, App Paths, file-association ProgIds, own
    MSI upgrade GUID, dist file names.
+6. `0006` installs `COPYING`, `LICENSES\` and a branded `NOTICE.txt` ("based on Inkscape", where the source is)
+   into every package (zip and installer).
 
 Data branding (`apply-branding.py`):
 
