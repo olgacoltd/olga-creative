@@ -1,0 +1,20 @@
+
+# ---------------------------------------------------------------------------------------------------
+# Product defaults (olga-creative), appended to the system-wide gimprc. A user's own gimprc still wins.
+# Layer/thumbnail sizes and import-add-alpha follow PhotoGIMP by Diolinux
+# (https://github.com/Diolinux/PhotoGIMP, commit eca3a8f5, GNU GPL v3).
+
+(layer-preview-size extra-large)
+(thumbnail-size large)
+(import-add-alpha yes)
+(toolbox-foo-area yes)
+(toolbox-wilber no)
+(show-welcome-dialog no)
+
+# Photoshop-style workspace (ours): one window with tabs, dark theme, and a window title that reads like
+# "photo.jpg @ 100% (Layer, RGB ...)". These equal or extend GIMP 3.2's own defaults; set explicitly so a
+# future upstream default change does not alter the product.
+(single-window-mode yes)
+(theme "Default")
+(theme-color-scheme dark)
+(image-title-format "%D*%f @ %z%% (%n, %t) %wx%h")

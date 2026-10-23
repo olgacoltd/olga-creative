@@ -1,0 +1,15 @@
+# Derived from PhotoGIMP by Diolinux (https://github.com/Diolinux/PhotoGIMP, commit eca3a8f5,
+# GNU GPL v3). See branding/gimp/defaults/README.md for what was changed.
+# GIMP user context
+
+(tool "gimp-rect-select-tool")
+(paint-info "gimp-paintbrush")
+(brush "2. Hardness 050")
+(dynamics "Pressure Size")
+(mybrush "100% Opaque")
+(pattern "Starfield")
+(gradient "Skyline")
+(palette "Standard")
+(font "Sans-serif")
+
+# end of user context
