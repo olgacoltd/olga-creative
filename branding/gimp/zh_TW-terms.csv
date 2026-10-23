@@ -1,0 +1,96 @@
+term,context,msgid,current_zh_TW,new_zh_TW,why
+Image Size,image-action,_Scale Image...,縮放影像(_S)...,影像尺寸(_S)...,Image > Image Size is called 影像尺寸 in the Traditional Chinese editions of the common photo editors
+Image Size,dialog-title,Scale Image,縮放影像,影像尺寸,title of the same dialog
+Canvas Size,image-action,Can_vas Size...,畫布尺寸(_V)...,版面尺寸(_V)...,Image > Canvas Size is commonly 版面尺寸
+Canvas Size,,Canvas Size,畫布尺寸,版面尺寸,title of the same dialog
+Duplicate Image,image-action,_Duplicate,再製影像(_D),複製影像(_D),"複製 is the everyday word; 再製 reads like a print term"
+Flatten Image,image-action,_Flatten Image,整平影像(_F),影像平面化(_F),Layer > Flatten Image is commonly 影像平面化
+Flatten Image,layers-action,_Flatten Image,整平影像(_F),影像平面化(_F),same command in the Layer menu
+Adjustments menu,image-action,_Colors,顏色(_C),調整(_C),"the menu with Levels / Curves / Hue-Saturation; users look for it as 影像 > 調整 (CANDIDATE: top-level menu name, check in the GUI)"
+Hue/Saturation,filters-action,Hue-_Saturation...,色相及飽和度(_S)...,色相/飽和度(_S)...,common name 色相/飽和度 (Ctrl+U)
+Hue/Saturation,,Hue-Saturation,色相及飽和度,色相/飽和度,dialog title
+Brightness/Contrast,filters-action,B_rightness-Contrast...,亮度及對比(_R)...,亮度/對比(_R)...,common name 亮度/對比
+Brightness/Contrast,,Brightness-Contrast,亮度及對比,亮度/對比,dialog title
+Desaturate,filters-action,_Desaturate...,去飽和(_D)...,去除飽和度(_D)...,common name 去除飽和度 (Ctrl+Shift+U)
+Desaturate,,Desaturate,去飽和度,去除飽和度,dialog title
+Invert,filters-action,In_vert,反轉(_V),負片效果(_V),"Ctrl+I is 負片效果 in the common editors; there 反轉 means Select > Inverse, which confuses"
+Invert,undo-type,Invert,反轉,負片效果,undo history entry of the same command
+Threshold,filters-action,_Threshold...,閾值(_T)…,臨界值(_T)…,common name 臨界值; 閾值 is a mainland-China term
+Threshold,,Threshold,閾值,臨界值,dialog title
+Unsharp Mask,filters-action,Sharpen (_Unsharp Mask)...,銳利化（解除銳利遮罩）(_U)…,銳利化（遮色片銳利化調整）(_U)…,common name 遮色片銳利化調整
+Duplicate Layer,layers-action,D_uplicate Layers,再製圖層(_U),複製圖層(_U),common name 複製圖層 (Ctrl+J)
+Duplicate Layer,,Duplicate layers,再製圖層,複製圖層,undo history entry
+Layer Mask,layers-action,Add La_yer Masks...,加入圖層遮罩(_Y)...,增加圖層遮色片(_Y)...,common name 圖層遮色片
+Layer Mask,,Add Layer Mask,加入圖層遮罩,增加圖層遮色片,dialog title
+Lock Transparent Pixels,layers-action,Lock Alph_a Channel,鎖定 Alpha 色版(_A),鎖定透明像素(_A),common name 鎖定透明像素
+Group Layers,layers-action,Gr_oup Layers,,群組圖層(_O),"new command (Ctrl+G, patch 0006): not in the upstream catalog, added"
+Group Layers,layers-action,Put the selected layers into a new layer group,,將選取的圖層放入新的圖層群組,tooltip of the new command
+Group Layers,,Group Layers,,群組圖層,undo history entry of the new command
+Ungroup Layers,layers-action,U_ngroup Layers,,解散圖層群組(_N),"new command (Ctrl+Shift+G, patch 0006): not in the upstream catalog, added"
+Ungroup Layers,layers-action,Move the layers out of the selected layer groups and remove the groups,,將圖層移出選取的群組並移除群組,tooltip of the new command
+Ungroup Layers,,Ungroup Layers,,解散圖層群組,undo history entry of the new command
+Export As,file-action,E_xport As...,匯出為(_X)...,轉存為(_X)...,"File > Export > Export As is 轉存為; it is now Ctrl+Shift+S (save as JPG/PNG)"
+Export,file-action,E_xport...,匯出(_X)...,轉存(_X)...,same wording as Export As
+Export,,Export to %s,匯出到 %s,轉存到 %s,"File menu item ""Export to photo.jpg"""
+Export,,Export Image,匯出影像,轉存影像,title of the Export dialog
+Save As (project),file-action,Save _As...,另存為新檔(_A)...,另存專案檔(_A)...,"saves the layered project file (.xcf) only; says so, since Ctrl+Shift+S now exports to JPG/PNG"
+Save a Copy (project),file-action,Save a Cop_y...,儲存到副本(_Y)...,另存專案檔副本(_Y)...,"project-file copy, Ctrl+Alt+S as in the common editors"
+Undo,edit-action,_Undo,復原(_U),還原(_U),common name 還原 (Ctrl+Z)
+Undo,,_Undo,復原(_U),還原(_U),same word elsewhere (toolbar / dialogs)
+Fill with Foreground,edit-action,Fill with _FG Color,用前景色填色(_F),填滿前景色(_F),common wording 填滿前景色 (Alt+Backspace)
+Fill with Background,edit-action,Fill with B_G Color,用背景色填色(_G),填滿背景色(_G),common wording 填滿背景色 (Ctrl+Backspace)
+Paste in Place,edit-action,Paste In P_lace,原地貼上(_L),就地貼上(_L),common name 就地貼上
+Deselect,select-action,_None,全不選(_N),取消選取(_N),common name 取消選取 (Ctrl+D)
+Shrink Selection,select-action,S_hrink...,縮小(_H)...,縮減(_H)...,Select > Modify > Contract is commonly 縮減
+Grow Selection,select-action,_Grow...,擴大(_G)...,擴張(_G)...,Select > Modify > Expand is commonly 擴張
+Rulers,view-action,Show R_ulers,顯示尺規(_U),顯示尺標(_U),common name 尺標 (Ctrl+R)
+Fit on Screen,view-action,_Fit Image in Window,縮放影像符合視窗大小(_F),顯示全頁(_F),common name 顯示全頁 (Ctrl+0)
+Zoom In,view-zoom-action,Zoom _In,拉近(_I),放大顯示(_I),common name 放大顯示 (Ctrl++)
+Zoom Out,view-zoom-action,Zoom _Out,拉遠(_O),縮小顯示(_O),common name 縮小顯示 (Ctrl+-)
+Help menu,help-action,_Help,求助(_H),說明(_H),Windows programs call the Help menu 說明
+Help menu,,_Help,求助(_H),說明(_H),same word on Help buttons
+Rectangular Marquee,,Rectangle Select,矩形選取,矩形選取畫面,tool name: 矩形選取畫面工具 (M)
+Rectangular Marquee,,_Rectangle Select,矩形選取(_R),矩形選取畫面(_R),Tools menu label
+Rectangular Marquee,,Rectangle Select Tool: Select a rectangular region,矩形選取工具：選取矩形區域,矩形選取畫面工具：選取矩形區域,toolbox tooltip
+Elliptical Marquee,,Ellipse Select,橢圓形選取,橢圓選取畫面,tool name: 橢圓選取畫面工具 (Shift+M)
+Elliptical Marquee,,_Ellipse Select,橢圓形選取(_E),橢圓選取畫面(_E),Tools menu label
+Elliptical Marquee,,Ellipse Select Tool: Select an elliptical region,橢圓形選取工具：選取一個橢圓形區域,橢圓選取畫面工具：選取一個橢圓形區域,toolbox tooltip
+Lasso,,Free Select,自由選取,套索,tool name: 套索工具 (L)
+Lasso,,_Free Select,自由選取(_F),套索(_F),Tools menu label
+Lasso,,Free Select Tool: Select a hand-drawn region with free and polygonal segments,自由選取工具：以任意和多邊形區段構成的手繪區域作選取,套索工具：以任意和多邊形區段構成的手繪區域作選取,toolbox tooltip
+Magic Wand,,Fuzzy Select,模糊選取,魔術棒,"tool name: 魔術棒工具 (W); 模糊 suggests blur, which it is not"
+Magic Wand,,Fu_zzy Select,模糊選取(_Z),魔術棒(_Z),Tools menu label
+Magic Wand,,Fuzzy Select Tool: Select a contiguous region on the basis of color,模糊選取工具：根據顏色來選取連續的區域,魔術棒工具：根據顏色來選取連續的區域,toolbox tooltip
+Brush Tool,,Paintbrush,畫筆,筆刷,tool name: 筆刷工具 (B)
+Brush Tool,,_Paintbrush,畫筆(_P),筆刷(_P),Tools menu label
+Brush Tool,,Paintbrush Tool: Paint smooth strokes using a brush,畫筆工具：使用筆刷繪製滑順的筆畫,筆刷工具：繪製滑順的筆畫,toolbox tooltip
+Clone Stamp,,Clone,仿製,仿製印章,tool name: 仿製印章工具 (S)
+Clone Stamp,,_Clone,仿製(_C),仿製印章(_C),Tools menu label
+Clone Stamp,,"Clone Tool: Selectively copy from an image or pattern, using a brush",仿製工具：使用筆刷選取性的從影像或圖樣作複製,仿製印章工具：使用筆刷選取性的從影像或圖樣作複製,toolbox tooltip
+Healing Brush,,Healing,修補,修復筆刷,tool name: 修復筆刷工具 (J)
+Healing Brush,,_Heal,修補(_H),修復筆刷(_H),Tools menu label
+Paint Bucket,,Bucket Fill,填色,油漆桶,tool name: 油漆桶工具 (Shift+G)
+Paint Bucket,,_Bucket Fill,填色(_B),油漆桶(_B),Tools menu label
+Paint Bucket,,Bucket Fill Tool: Fill selected area with a color or pattern,填色工具：將所選的區域填上顏色或圖樣,油漆桶工具：將所選的區域填上顏色或圖樣,toolbox tooltip
+Eyedropper,,Color Picker,取色器,滴管,tool name: 滴管工具 (I)
+Eyedropper,,C_olor Picker,取色器(_O),滴管(_O),Tools menu label
+Eyedropper,,Color Picker Tool: Set colors from image pixels,取色器工具：從影像像素設定顏色,滴管工具：從影像像素設定顏色,toolbox tooltip
+Zoom Tool,,_Zoom,遠近縮放(_Z),縮放顯示(_Z),tool name: 縮放顯示工具 (Z)
+Zoom Tool,,Zoom Tool: Adjust the zoom level,遠近縮放顯示工具：調整縮放程度,縮放顯示工具：調整縮放程度,toolbox tooltip
+Dodge / Burn,,Dodge / Burn,遮亮 / 曝深,加亮 / 加深,tool name: 加亮 / 加深工具 (O)
+Dodge / Burn,,Dod_ge / Burn,遮亮 / 曝深(_G),加亮 / 加深(_G),Tools menu label
+Dodge / Burn,,Dodge / Burn Tool: Selectively lighten or darken using a brush,遮亮 / 曝深工具：使用筆刷來增亮或變暗,加亮 / 加深工具：使用筆刷來增亮或變暗,toolbox tooltip
+Smudge,,Smudge,塗抹,指尖,tool name: 指尖工具
+Smudge,,_Smudge,塗抹(_S),指尖(_S),Tools menu label
+Smudge,,Smudge Tool: Smudge selectively using a brush,塗抹工具：使用筆刷作選擇性塗抹,指尖工具：使用筆刷作選擇性塗抹,toolbox tooltip
+Free Transform,,Unified Transform,統合變換,任意變形,tool name: Edit > Free Transform (Ctrl+T) is 任意變形
+Free Transform,,_Unified Transform,統合變換(_T),任意變形(_T),Tools menu label
+Free Transform,,"Unified Transform Tool: Transform the layer, selection or path",統合變換工具：圖層、選取範圍或路徑變換,任意變形工具：變形圖層、選取範圍或路徑,toolbox tooltip
+Ruler Tool,,Measure,測量,尺標,tool name: 尺標工具
+Ruler Tool,,_Measure,測量(_M),尺標(_M),Tools menu label
+Ruler Tool,,Measure Tool: Measure distances and angles,測量工具：測量距離和角度,尺標工具：測量距離和角度,toolbox tooltip
+Pen Tool,,Pat_hs,路徑(_H),筆型(_H),Tools menu label: 筆型工具 (P); the Paths panel keeps 路徑
+Pen Tool,,Paths Tool: Create and edit paths,路徑工具：建立和編輯路徑,筆型工具：建立和編輯路徑,toolbox tooltip
+Trim,image-action,Crop to C_ontent,裁切到只剩內容(_O),修剪(_O),Image > Trim (cut away empty borders) is commonly 修剪
+Flip Canvas Horizontal,image-action,Flip _Horizontally,水平翻轉(_H),水平翻轉版面(_H),"Image > Image Rotation > Flip Canvas Horizontal is 水平翻轉版面; distinguishes it from flipping a layer"
+Flip Canvas Vertical,image-action,Flip _Vertically,垂直翻轉(_V),垂直翻轉版面(_V),"Image > Image Rotation > Flip Canvas Vertical is 垂直翻轉版面"
