@@ -1,0 +1,27 @@
+From 594879153b207b19eac730444df34965220ffb39 Mon Sep 17 00:00:00 2001
+From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
+Date: Fri, 23 Oct 2026 17:43:34 +0800
+Subject: [PATCH 4/5] Default to the brand keymap and skip the welcome dialog
+
+---
+ src/preferences-skeleton.h | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/src/preferences-skeleton.h b/src/preferences-skeleton.h
+index 395b945..22519d0 100644
+--- a/src/preferences-skeleton.h
++++ b/src/preferences-skeleton.h
+@@ -398,7 +398,12 @@ static char const preferences_skeleton[] =
+        unitType="2" />
+     <group
+        id="boot"
+-       theme="colorful" />
++       theme="colorful"
++       showsplash="1"
++       showwelcome="0" />
++    <group
++       id="kbshortcuts"
++       shortcutfile="brand-default.xml" />
+   </group>
+ 
+   <group

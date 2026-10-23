@@ -1,0 +1,108 @@
+From e77d58d7587ec2aba3ef766edef7cf5aa143b4da Mon Sep 17 00:00:00 2001
+From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
+Date: Fri, 23 Oct 2026 17:43:34 +0800
+Subject: [PATCH 5/5] Brand the installer and dist package names
+
+---
+ CMakeScripts/ConfigCPack.cmake | 37 +++++++++++++++++-----------------
+ CMakeScripts/Dist.cmake        |  2 +-
+ 2 files changed, 20 insertions(+), 19 deletions(-)
+
+diff --git a/CMakeScripts/ConfigCPack.cmake b/CMakeScripts/ConfigCPack.cmake
+index 6023361..a55c10e 100644
+--- a/CMakeScripts/ConfigCPack.cmake
++++ b/CMakeScripts/ConfigCPack.cmake
+@@ -5,26 +5,26 @@
+ 
+ ## General ##
+ 
+-set(CPACK_PACKAGE_NAME "Inkscape")
+-set(CPACK_PACKAGE_VENDOR "Inkscape")
++set(CPACK_PACKAGE_NAME "${OLGA_BRAND_NAME_ASCII}")
++set(CPACK_PACKAGE_VENDOR "${OLGA_BRAND_VENDOR}")
+ set(CPACK_PACKAGE_VERSION_MAJOR ${INKSCAPE_VERSION_MAJOR}) # TODO: Can be set via project(), see CMAKE_PROJECT_VERSION_PATCH
+ set(CPACK_PACKAGE_VERSION_MINOR ${INKSCAPE_VERSION_MINOR})
+ set(CPACK_PACKAGE_VERSION_PATCH ${INKSCAPE_VERSION_PATCH})
+ set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}${INKSCAPE_VERSION_SUFFIX}")
+ set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/README.md") # TODO: Where is this used? Do we need a better source?
+-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Open-source vector graphics editor")
+-set(CPACK_PACKAGE_HOMEPAGE_URL "https://inkscape.org")
++set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${OLGA_BRAND_SUMMARY}")
++set(CPACK_PACKAGE_HOMEPAGE_URL "${OLGA_BRAND_URL}")
+ set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/share/branding/inkscape.svg") # TODO: Can any generator make use of this?
+ set(CPACK_PACKAGE_CONTACT "Inkscape developers <inkscape-devel@lists.inkscape.org>")
+ 
+ set(CPACK_PACKAGE_FILE_NAME ${INKSCAPE_DIST_PREFIX})
+ set(CPACK_PACKAGE_CHECKSUM "SHA256")
+ 
+-set(CPACK_PACKAGE_EXECUTABLES "inkscape;Inkscape;inkview;Inkview")
+-set(CPACK_CREATE_DESKTOP_LINKS "inkscape")
++set(CPACK_PACKAGE_EXECUTABLES "${OLGA_BRAND_ID};${OLGA_BRAND_NAME_ASCII}")
++set(CPACK_CREATE_DESKTOP_LINKS "${OLGA_BRAND_ID}")
+ 
+ if(WIN32)
+-    set(CPACK_PACKAGE_INSTALL_DIRECTORY "Inkscape")
++    set(CPACK_PACKAGE_INSTALL_DIRECTORY "${OLGA_BRAND_NAME_ASCII}")
+     set(CPACK_STRIP_FILES FALSE)
+ else()
+     set(CPACK_PACKAGE_INSTALL_DIRECTORY "inkscape")
+@@ -60,14 +60,14 @@ set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}/share/branding/inkscape.ico")
+ set(CPACK_NSIS_MUI_HEADERIMAGE "${CMAKE_SOURCE_DIR}/packaging/nsis/header.bmp")
+ set(CPACK_NSIS_MUI_WELCOMEFINISHPAGE_BITMAP "${CMAKE_SOURCE_DIR}/packaging/nsis/welcomefinish.bmp")
+ set(CPACK_NSIS_IGNORE_LICENSE_PAGE 1)
+-set(CPACK_NSIS_INSTALLED_ICON_NAME "bin/inkscape.exe")
++set(CPACK_NSIS_INSTALLED_ICON_NAME "bin/${OLGA_BRAND_ID}.exe")
+ set(CPACK_NSIS_HELP_LINK "${CPACK_PACKAGE_HOMEPAGE_URL}")
+ set(CPACK_NSIS_URL_INFO_ABOUT "${CPACK_PACKAGE_HOMEPAGE_URL}")
+-set(CPACK_NSIS_MENU_LINKS "${CPACK_PACKAGE_HOMEPAGE_URL}" "Inkscape Homepage")
++set(CPACK_NSIS_MENU_LINKS "${CPACK_PACKAGE_HOMEPAGE_URL}" "${OLGA_BRAND_NAME_ASCII} Homepage")
+ set(CPACK_NSIS_COMPRESSOR "/SOLID lzma") # zlib|bzip2|lzma
+ set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL "ON")
+ set(CPACK_NSIS_MODIFY_PATH "ON") # while the name does not suggest it, this also provides the possibility to add desktop icons
+-set(CPACK_NSIS_MUI_FINISHPAGE_RUN "inkscape") # TODO: this results in instance with administrative privileges!
++set(CPACK_NSIS_MUI_FINISHPAGE_RUN "${OLGA_BRAND_ID}") # TODO: this results in instance with administrative privileges!
+ set(CPACK_NSIS_MANIFEST_DPI_AWARE ON) # Make the text not blurry in installer
+ 
+ # Additional commands placed very early in the NSIS file.
+@@ -89,19 +89,20 @@ file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/packaging/nsis/fileassoc.nsh" native_pa
+ string(REPLACE "\\" "\\\\" native_path "${native_path}")
+ set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "!include '${native_path}'")
+ set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "\
+-  WriteRegStr SHCTX 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\inkscape.exe' '' '$INSTDIR\\\\bin\\\\inkscape.exe'\n\
+-  WriteRegStr SHCTX 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\inkscape.exe' 'Path' '$INSTDIR\\\\bin'\n\
+-  !insertmacro APP_ASSOCIATE 'svg' 'Inkscape.SVG' 'Scalable Vector Graphics' '$INSTDIR\\\\bin\\\\inkscape.exe,0' 'Open with Inkscape' '$INSTDIR\\\\bin\\\\inkscape.exe \\\"%1\\\"'\n\
+-  !insertmacro APP_ASSOCIATE 'svgz' 'Inkscape.SVGZ' 'Compressed Scalable Vector Graphics' '$INSTDIR\\\\bin\\\\inkscape.exe,0' 'Open with Inkscape' '$INSTDIR\\\\bin\\\\inkscape.exe \\\"%1\\\"'\n\
++  WriteRegStr SHCTX 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\${OLGA_BRAND_ID}.exe' '' '$INSTDIR\\\\bin\\\\${OLGA_BRAND_ID}.exe'\n\
++  WriteRegStr SHCTX 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\${OLGA_BRAND_ID}.exe' 'Path' '$INSTDIR\\\\bin'\n\
++  !insertmacro APP_ASSOCIATE 'svg' '${OLGA_BRAND_NAME_ASCII}.SVG' 'Scalable Vector Graphics' '$INSTDIR\\\\bin\\\\${OLGA_BRAND_ID}.exe,0' 'Open with ${OLGA_BRAND_NAME_ASCII}' '$INSTDIR\\\\bin\\\\${OLGA_BRAND_ID}.exe \\\"%1\\\"'\n\
++  !insertmacro APP_ASSOCIATE 'svgz' '${OLGA_BRAND_NAME_ASCII}.SVGZ' 'Compressed Scalable Vector Graphics' '$INSTDIR\\\\bin\\\\${OLGA_BRAND_ID}.exe,0' 'Open with ${OLGA_BRAND_NAME_ASCII}' '$INSTDIR\\\\bin\\\\${OLGA_BRAND_ID}.exe \\\"%1\\\"'\n\
+   !insertmacro UPDATEFILEASSOC")
+ set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "\
+-  DeleteRegKey SHCTX 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\inkscape.exe'\n\
+-  !insertmacro APP_UNASSOCIATE 'svg' 'Inkscape.SVG'\n\
+-  !insertmacro APP_UNASSOCIATE 'svgz' 'Inkscape.SVGZ'\n\
++  DeleteRegKey SHCTX 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\${OLGA_BRAND_ID}.exe'\n\
++  !insertmacro APP_UNASSOCIATE 'svg' '${OLGA_BRAND_NAME_ASCII}.SVG'\n\
++  !insertmacro APP_UNASSOCIATE 'svgz' '${OLGA_BRAND_NAME_ASCII}.SVGZ'\n\
+   !insertmacro UPDATEFILEASSOC")
+ 
+ # WIX (Windows .msi installer)
+-set(CPACK_WIX_UPGRADE_GUID "4d5fedaa-84a0-48be-bd2a-08246398361a")
++# own upgrade code: must never upgrade/replace a real Inkscape install
++set(CPACK_WIX_UPGRADE_GUID "6f3c2a9e-5d1b-4b7e-9a42-0c8e7d51f0a3")
+ set(CPACK_WIX_VERSION 4)
+ set(CPACK_WIX_PRODUCT_ICON "${CMAKE_SOURCE_DIR}/share/branding/inkscape.ico")
+ set(CPACK_WIX_UI_BANNER "${CMAKE_SOURCE_DIR}/packaging/wix/Bitmaps/banner.bmp")
+diff --git a/CMakeScripts/Dist.cmake b/CMakeScripts/Dist.cmake
+index e7e6832..ab5bec3 100644
+--- a/CMakeScripts/Dist.cmake
++++ b/CMakeScripts/Dist.cmake
+@@ -6,7 +6,7 @@ set(INKSCAPE_SOURCE_DIR ${CMAKE_SOURCE_DIR})
+ include(CMakeScripts/inkscape-version.cmake)
+ 
+ # set distribution prefix (used as filename for distributable packages)
+-set(INKSCAPE_DIST_PREFIX "${PROJECT_NAME}-${INKSCAPE_VERSION}")
++set(INKSCAPE_DIST_PREFIX "${OLGA_BRAND_ID}-${OLGA_BRAND_VERSION}")
+ if(INKSCAPE_REVISION_DATE AND INKSCAPE_REVISION_HASH)
+     set(INKSCAPE_DIST_PREFIX ${INKSCAPE_DIST_PREFIX}_${INKSCAPE_REVISION_DATE}_${INKSCAPE_REVISION_HASH})
+ endif()

@@ -1,0 +1,157 @@
+From 927d19f718d4937eaa3ea69f6768b06305cc9f62 Mon Sep 17 00:00:00 2001
+From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
+Date: Fri, 23 Oct 2026 17:43:34 +0800
+Subject: [PATCH 2/5] Brand the version string, window title, app id and
+ profile directory
+
+---
+ src/inkscape-application.cpp     |  3 ++-
+ src/inkscape-main.cpp            | 10 ++++++++++
+ src/inkscape-version-info.cpp    |  4 +++-
+ src/inkscape.cpp                 |  3 ++-
+ src/io/resource.cpp              |  6 ++++--
+ src/ui/widget/desktop-widget.cpp |  3 ++-
+ 6 files changed, 23 insertions(+), 6 deletions(-)
+
+diff --git a/src/inkscape-application.cpp b/src/inkscape-application.cpp
+index bf1d8ac..888864b 100644
+--- a/src/inkscape-application.cpp
++++ b/src/inkscape-application.cpp
+@@ -36,6 +36,7 @@
+  */
+ 
+ #include "inkscape-application.h"
++#include "olga-brand.h"
+ #include "preferences.h"
+ 
+ #ifdef HAVE_CONFIG_H
+@@ -611,7 +612,7 @@ InkscapeApplication::InkscapeApplication()
+ 
+     using T = Gio::Application;
+ 
+-    auto app_id = Glib::ustring("org.inkscape.Inkscape");
++    auto app_id = Glib::ustring(OLGA_APP_ID);
+     auto flags = Gio::APPLICATION_HANDLES_OPEN | // Use default file opening.
+                  Gio::APPLICATION_CAN_OVERRIDE_APP_ID;
+     auto non_unique = false;
+diff --git a/src/inkscape-main.cpp b/src/inkscape-main.cpp
+index c9880ca..25adc15 100644
+--- a/src/inkscape-main.cpp
++++ b/src/inkscape-main.cpp
+@@ -21,6 +21,7 @@
+ 
+ #include "inkscape-application.h"
+ #include "path-prefix.h"
++#include "olga-brand.h"
+ 
+ #include "io/resource.h"
+ 
+@@ -35,6 +36,15 @@ static void set_extensions_env()
+         gchar *new_path = g_strdup_printf("%s" G_SEARCHPATH_SEPARATOR_S "%s", program_dir, path);
+         g_setenv("PATH", new_path, true);
+         g_free(new_path);
++        if (!g_getenv("INKSCAPE_COMMAND")) {
++#ifdef _WIN32
++            gchar *cmd = g_build_filename(program_dir, OLGA_BRAND_ID ".com", nullptr);
++#else
++            gchar *cmd = g_build_filename(program_dir, OLGA_BRAND_ID, nullptr);
++#endif
++            g_setenv("INKSCAPE_COMMAND", cmd, true);
++            g_free(cmd);
++        }
+     }
+ 
+     // add various locations to PYTHONPATH so extensions find their modules
+diff --git a/src/inkscape-version-info.cpp b/src/inkscape-version-info.cpp
+index d408b18..632ed49 100644
+--- a/src/inkscape-version-info.cpp
++++ b/src/inkscape-version-info.cpp
+@@ -28,6 +28,7 @@
+ #endif
+ 
+ #include "inkscape-version.h" // Inkscape version
++#include "olga-brand.h"
+ 
+ 
+ namespace Inkscape {
+@@ -40,7 +41,8 @@ namespace Inkscape {
+  * @return version string
+  */
+ std::string inkscape_version() {
+-    return std::string("Inkscape ") + Inkscape::version_string;
++    return std::string(OLGA_BRAND_NAME " " OLGA_BRAND_VERSION " (based on " OLGA_UPSTREAM_NAME " ") +
++           Inkscape::version_string + ")";
+ }
+ 
+ /**
+diff --git a/src/inkscape.cpp b/src/inkscape.cpp
+index ae8d694..951fdaa 100644
+--- a/src/inkscape.cpp
++++ b/src/inkscape.cpp
+@@ -34,6 +34,7 @@
+ #include "desktop.h"
+ #include "document.h"
+ #include "inkscape.h"
++#include "olga-brand.h"
+ #include "inkscape-application.h"
+ #include "inkscape-version-info.h"
+ #include "inkscape-window.h"
+@@ -429,7 +430,7 @@ Application::crash_handler (int /*signum*/)
+                         docname,                 // Name
+                         "Emergency Saved Image", // Description
+                         "image/svg+xml",         // Mime type
+-                        "org.inkscape.Inkscape", // App name
++                        OLGA_APP_ID,             // App name
+                         "",                      // Execute
+                         {"Crash"},               // Groups
+                         true,                    // Private
+diff --git a/src/io/resource.cpp b/src/io/resource.cpp
+index e9828fe..f9b5628 100644
+--- a/src/io/resource.cpp
++++ b/src/io/resource.cpp
+@@ -32,12 +32,14 @@
+ #include "path-prefix.h"
+ #include "preferences.h"
+ #include "sys.h"
++#include "olga-brand.h"
+ 
+ using Inkscape::IO::file_test;
+ 
+ namespace Inkscape::IO::Resource {
+ 
+-#define INKSCAPE_PROFILE_DIR "inkscape"
++// Branded builds keep their own profile, so upstream Inkscape preferences do not override our defaults
++#define INKSCAPE_PROFILE_DIR OLGA_BRAND_ID
+ 
+ gchar *_get_path(Domain domain, Type type, char const *filename, char const *extra=nullptr)
+ {
+@@ -69,7 +71,7 @@ gchar *_get_path(Domain domain, Type type, char const *filename, char const *ext
+         } break;
+         case CACHE: {
+             g_assert(type == NONE);
+-            return g_build_filename(g_get_user_cache_dir(), "inkscape", filename, extra, nullptr);
++            return g_build_filename(g_get_user_cache_dir(), OLGA_BRAND_ID, filename, extra, nullptr);
+         } break;
+ 
+         case SYSTEM:
+diff --git a/src/ui/widget/desktop-widget.cpp b/src/ui/widget/desktop-widget.cpp
+index 56647d4..858c8cb 100644
+--- a/src/ui/widget/desktop-widget.cpp
++++ b/src/ui/widget/desktop-widget.cpp
+@@ -22,6 +22,7 @@
+  */
+ 
+ #include "desktop-widget.h"
++#include "olga-brand.h"
+ 
+ #include <algorithm>
+ #include <string>
+@@ -325,7 +326,7 @@ SPDesktopWidget::updateTitle(gchar const* uri)
+             Name += ")";
+         }
+ 
+-        Name += " - Inkscape";
++        Name += " - " OLGA_BRAND_NAME;
+ 
+         // Name += " (";
+         // Name += Inkscape::version_string;

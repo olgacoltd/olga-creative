@@ -1,0 +1,36 @@
+{
+  "_comment": "Single source of the product brand. Placeholder names; the owner renames before launch. Rebuild after editing (build-inkscape.ps1 re-applies branding and recompiles only what changed).",
+  "vendor": "Olga",
+  "url": "https://inkscape.org",
+  "colors": {
+    "primary": "#1E3A5F",
+    "accent": "#F0B44C",
+    "text": "#FFFFFF"
+  },
+  "font": {
+    "latin": ["C:/Windows/Fonts/segoeuib.ttf", "C:/Windows/Fonts/arialbd.ttf"],
+    "cjk": ["C:/Windows/Fonts/msjhbd.ttc", "C:/Windows/Fonts/msjh.ttc", "C:/Windows/Fonts/NotoSansTC-VF.ttf"]
+  },
+  "inkscape": {
+    "name": "OlgaDraw",
+    "nameAscii": "OlgaDraw",
+    "id": "olgadraw",
+    "appId": "tw.olga.OlgaDraw",
+    "monogram": "O",
+    "versionSuffix": "-olga1",
+    "summary": "Vector graphics editor based on Inkscape",
+    "tagline": "Vector design",
+    "tagline_zh_TW": "向量設計",
+    "keymapName": "OlgaDraw default",
+    "keymapSource": "adobe-illustrator-cs2.xml",
+    "dropThirdPartyBrandedFiles": true
+  },
+  "gimp": {
+    "name": "OlgaPhoto",
+    "nameAscii": "OlgaPhoto",
+    "id": "olgaphoto",
+    "appId": "tw.olga.OlgaPhoto",
+    "monogram": "P",
+    "versionSuffix": "-olga1"
+  }
+}

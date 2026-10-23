@@ -1,0 +1,85 @@
+From 67fae92c11ca2b207b264bad8f019c554628cd2c Mon Sep 17 00:00:00 2001
+From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
+Date: Fri, 23 Oct 2026 17:43:34 +0800
+Subject: [PATCH 3/5] Brand the executable name and Windows resources
+
+---
+ src/CMakeLists.txt        | 11 ++++++-----
+ src/inkscape-manifest.xml |  2 +-
+ src/inkscape.rc           |  8 ++++----
+ 3 files changed, 11 insertions(+), 10 deletions(-)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 85b2d39..563241f 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -354,11 +354,11 @@ if(WIN32)
+   # Configure and add the platform specific resource files (enabling the app icon).
+   string(TIMESTAMP COPYRIGHT_YEAR %Y)
+   
+-  set(FILE_NAME inkscape)
+-  set(PROGRAM_NAME Inkscape)
+-  set(PROGRAM_DESCRIPTION "Inkscape vector graphics editor")
++  set(FILE_NAME ${OLGA_BRAND_ID})
++  set(PROGRAM_NAME ${OLGA_BRAND_NAME_ASCII})
++  set(PROGRAM_DESCRIPTION "${OLGA_BRAND_SUMMARY}")
+   configure_file(inkscape.rc ${CMAKE_BINARY_DIR}/src/inkscape.rc)
+-  configure_file(inkscape-manifest.xml ${CMAKE_BINARY_DIR}/src/inkscape-manifest.xml)  
++  configure_file(inkscape-manifest.xml ${CMAKE_BINARY_DIR}/src/${FILE_NAME}-manifest.xml)
+   list(APPEND main_SRC ${CMAKE_BINARY_DIR}/src/inkscape.rc)
+   
+   set(FILE_NAME inkview)
+@@ -371,6 +371,7 @@ endif()
+ 
+ # make executables for inkscape and inkview
+ add_executable(inkscape ${main_SRC})
++set_target_properties(inkscape PROPERTIES OUTPUT_NAME "${OLGA_BRAND_ID}")
+ add_executable(inkview ${view_SRC})
+ if(WIN32)
+   # Make the same executables again, but this time as console application (GUI applications can't print to the console)
+@@ -378,7 +379,7 @@ if(WIN32)
+   set_target_properties(inkscape_com
+                         PROPERTIES
+                           LINK_FLAGS "-mconsole"
+-                          OUTPUT_NAME "inkscape.com"
++                          OUTPUT_NAME "${OLGA_BRAND_ID}.com"
+                           SUFFIX "")
+   add_executable(inkview_com ${view_SRC})
+   set_target_properties(inkview_com
+diff --git a/src/inkscape-manifest.xml b/src/inkscape-manifest.xml
+index 61756f0..893d959 100644
+--- a/src/inkscape-manifest.xml
++++ b/src/inkscape-manifest.xml
+@@ -1,7 +1,7 @@
+ <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+ <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+ 
+-  <assemblyIdentity type="win32" name="${PROGRAM_NAME}"
++  <assemblyIdentity type="win32" name="${FILE_NAME}"
+     version="${INKSCAPE_VERSION_MAJOR}.${INKSCAPE_VERSION_MINOR}.${INKSCAPE_VERSION_PATCH}.0"/>
+   <description>${PROGRAM_DESCRIPTION}</description>
+ 
+diff --git a/src/inkscape.rc b/src/inkscape.rc
+index 677dfb1..65074f2 100644
+--- a/src/inkscape.rc
++++ b/src/inkscape.rc
+@@ -12,15 +12,15 @@ BEGIN
+     BEGIN
+         BLOCK "040904E4"
+         BEGIN
+-            VALUE "Comments",         "Published under the GNU GPL"
+-            VALUE "CompanyName",      "Inkscape project"
++            VALUE "Comments",         "Based on Inkscape (https://inkscape.org). Published under the GNU GPL"
++            VALUE "CompanyName",      "${OLGA_BRAND_VENDOR}"
+             VALUE "FileDescription",  "${PROGRAM_DESCRIPTION}"
+             VALUE "FileVersion",      "${INKSCAPE_VERSION}"
+             VALUE "InternalName",     "${PROGRAM_NAME}"
+-            VALUE "LegalCopyright",   "© ${COPYRIGHT_YEAR} Inkscape project"
++            VALUE "LegalCopyright",   "(C) ${COPYRIGHT_YEAR} Inkscape project and ${OLGA_BRAND_VENDOR}, GNU GPL"
+             VALUE "OriginalFilename", "${FILE_NAME}.exe"
+             VALUE "ProductName",      "${PROGRAM_NAME}"
+-            VALUE "ProductVersion",   "${INKSCAPE_VERSION}"
++            VALUE "ProductVersion",   "${OLGA_BRAND_VERSION}"
+         END
+     END
+     BLOCK "VarFileInfo"
