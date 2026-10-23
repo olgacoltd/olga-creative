@@ -7,6 +7,7 @@
   job object and survives the ssh connection dropping. It runs as the calling user, non-interactive,
   no window on anybody's desktop. No scheduled task is created.
 
+  Everything runs at Idle CPU priority (the build must never disturb the person using the machine).
   While it runs, the wrapper holds SetThreadExecutionState(ES_CONTINUOUS|ES_SYSTEM_REQUIRED) so idle
   sleep does not interrupt the build (power settings are not changed; closing the lid can still sleep
   the machine - just re-run, the build scripts resume).
@@ -50,9 +51,12 @@ $cmdArgs = "/d /c `"$inner >> `"$log`" 2>&1`""
 # 1) WMI: escapes the ssh job object, no artefacts left behind. Needs WMI access (admin over ssh).
 $started = $false
 try {
+    # PriorityClass 64 = IDLE: the build must never disturb the person using the machine
+    $startup = New-CimInstance -ClassName Win32_ProcessStartup -ClientOnly -Property @{ PriorityClass = [uint32]64 }
     $r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{
-        CommandLine      = "cmd.exe $cmdArgs"
-        CurrentDirectory = $PSScriptRoot
+        CommandLine               = "cmd.exe $cmdArgs"
+        CurrentDirectory          = $PSScriptRoot
+        ProcessStartupInformation = $startup
     } -ErrorAction Stop
     if ($r.ReturnValue -eq 0) {
         Write-Output "started $Name via WMI (cmd pid $($r.ProcessId))"
@@ -81,8 +85,8 @@ public static class OlgaSpawn {
     public static int Start(string cmd, string cwd) {
         var si = new STARTUPINFO(); si.cb = Marshal.SizeOf(si);
         PROCESS_INFORMATION pi;
-        // CREATE_BREAKAWAY_FROM_JOB | CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP
-        if (!CreateProcess(null, cmd, IntPtr.Zero, IntPtr.Zero, false, 0x01000000 | 0x08000000 | 0x00000200, IntPtr.Zero, cwd, ref si, out pi))
+        // CREATE_BREAKAWAY_FROM_JOB | CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP | IDLE_PRIORITY_CLASS
+        if (!CreateProcess(null, cmd, IntPtr.Zero, IntPtr.Zero, false, 0x01000000 | 0x08000000 | 0x00000200 | 0x00000040, IntPtr.Zero, cwd, ref si, out pi))
             return -Marshal.GetLastWin32Error();
         CloseHandle(pi.hp); CloseHandle(pi.ht);
         return pi.pid;
@@ -111,7 +115,7 @@ if (-not $started) {
         $action = New-ScheduledTaskAction -Execute 'cmd.exe' -Argument $cmdArgs -WorkingDirectory $PSScriptRoot
         $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType S4U -RunLevel Limited
         $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
-            -ExecutionTimeLimit (New-TimeSpan -Hours 12) -StartWhenAvailable
+            -ExecutionTimeLimit (New-TimeSpan -Hours 12) -StartWhenAvailable -Priority 10
         Register-ScheduledTask -TaskName $taskName -Action $action -Principal $principal -Settings $settings -ErrorAction Stop | Out-Null
         Start-ScheduledTask -TaskName $taskName -ErrorAction Stop
         Write-Output "started $Name via scheduled task $taskName (S4U, $user)"

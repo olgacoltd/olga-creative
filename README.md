@@ -51,6 +51,19 @@ for the current user, and as a last resort to `Start-Process`. While the job run
 `SetThreadExecutionState(ES_CONTINUOUS|ES_SYSTEM_REQUIRED)`, so idle sleep does not interrupt it; power
 settings are not changed. Only one copy per name runs at a time (`<root>\logs\<name>.pid`).
 
+### The build must never disturb the person using the machine
+
+The build boxes are people's computers (the owner's laptop is in daily use). Therefore:
+
+- Every step runs at **Idle CPU priority**: `run-detached.ps1` starts the job at Idle on every launch path,
+  and `common.ps1` drops any script that loads it to Idle, so bash, ninja, gcc, curl and 7zr inherit it.
+- Default parallelism is **CPU threads minus 2** (`ninja -j6` on the 8-thread laptop); `-ScriptArgs '-Jobs 4'`
+  to go lower.
+- No system changes: no Defender exclusion, no power-plan change, no services. Windows Defender will still
+  scan the build output (it costs CPU we cannot lower); if the user notices, stop the job (`Stop-Process` the
+  pid in `<root>\logs\<name>.pid` and its children, or `cleanup.ps1 -WhatIf` to see them) and resume later -
+  the build continues where it stopped.
+
 Extra build options go through `-ScriptArgs`, e.g. `-ScriptArgs '-Clean'` (full recompile) or
 `-ScriptArgs '-NoInstaller'`.
 

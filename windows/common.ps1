@@ -7,6 +7,13 @@ $ProgressPreference = 'SilentlyContinue'   # Invoke-WebRequest is 10x slower wit
 
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 
+# The build must never disturb the person using the machine: every script that dot-sources this file
+# drops itself (and therefore every child: bash, ninja, gcc, 7zr, curl) to Idle priority.
+try { [Diagnostics.Process]::GetCurrentProcess().PriorityClass = [Diagnostics.ProcessPriorityClass]::Idle } catch { }
+
+# Default parallelism leaves 2 hardware threads free for the user (override with -Jobs).
+function Get-DefaultJobs { return [Math]::Max(1, [Environment]::ProcessorCount - 2) }
+
 function Write-Step([string]$msg) {
     $ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
     Write-Output "[$ts] === $msg"

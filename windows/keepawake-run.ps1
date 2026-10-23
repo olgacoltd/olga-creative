@@ -11,6 +11,8 @@ Add-Type -Namespace Olga -Name Power -MemberDefinition @'
 $ES_CONTINUOUS = [uint32]2147483648      # 0x80000000
 $ES_SYSTEM_REQUIRED = [uint32]1
 [void][Olga.Power]::SetThreadExecutionState($ES_CONTINUOUS -bor $ES_SYSTEM_REQUIRED)
+# The build must never disturb the person using the machine: Idle priority, inherited by bash/ninja/gcc.
+try { [Diagnostics.Process]::GetCurrentProcess().PriorityClass = [Diagnostics.ProcessPriorityClass]::Idle } catch { }
 Set-Content -Path $PidFile -Value $PID
 $start = Get-Date
 Write-Output "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] START $Target $ArgString (pid $PID, keep-awake on)"

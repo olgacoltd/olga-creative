@@ -133,7 +133,7 @@ if ($brandChanged -or -not (Test-Path $ninjaFile)) {
 }
 
 # ---------------------------------------------------------------- 5. build + install
-if ($Jobs -le 0) { $Jobs = [Environment]::ProcessorCount }
+if ($Jobs -le 0) { $Jobs = Get-DefaultJobs }    # CPU threads minus 2, at Idle priority
 Write-Step "build: ninja -j $Jobs install/strip"
 $tb = Get-Date
 $b = ConvertTo-MsysPath $build
