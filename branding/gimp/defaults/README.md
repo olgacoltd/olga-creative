@@ -30,6 +30,11 @@ Changes from PhotoGIMP:
   Ctrl+[ ] layer order, Alt+[ ] layer selection, Ctrl+1 / Ctrl+plus / Ctrl+minus zoom, Ctrl+R rulers,
   Ctrl+; guides, Ctrl+' grid, Ctrl+Shift+Alt+W / S export). The block's comment lists which GIMP defaults
   they displace.
+- Save / Export (Photoshop habit): **Ctrl+Shift+S = File > Export As** (save as JPG/PNG/...; Ctrl+Shift+E still
+  works too). GIMP's native-format **Save As** stays in the File menu **without a key**; **Save a Copy** (native
+  format) is **Ctrl+Alt+S** as in Photoshop. Ctrl+S is still GIMP's Save (native .xcf project file).
+- Layer groups: **Ctrl+G = Layer > Group Layers**, **Ctrl+Shift+G = Ungroup Layers** (actions from patch 0006).
+  Ctrl+G was GIMP's shortcut for the Gradients dialog, which now has no key (Windows > Dockable Dialogs).
 - `sessionrc`: same dock layout, but the dock name `gimp-vectors-list` is `gimp-path-list` in GIMP 3.2, the
   machine-specific window and dialog positions were removed, the window starts maximized, and Undo History
   was added next to Layers / Channels / Paths.

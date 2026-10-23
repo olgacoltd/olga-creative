@@ -1,0 +1,269 @@
+From 80f922ec396164bd0feccacafe73485913b723d9 Mon Sep 17 00:00:00 2001
+From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
+Date: Sat, 24 Oct 2026 06:03:10 +0800
+Subject: [PATCH 6/7] Add Group Layers and Ungroup Layers actions
+
+layers-group-selected puts the selected layers (in stacking order, a layer
+whose ancestor group is also selected moves with that group) into a new
+layer group at the place of the topmost one. layers-ungroup moves the
+children of the selected groups out, in order, and removes the groups.
+Both are a single undo step. They have no default key in the source; the
+product's default shortcutsrc binds them.
+---
+ app/actions/layers-actions.c  |  14 ++++
+ app/actions/layers-commands.c | 154 ++++++++++++++++++++++++++++++++++
+ app/actions/layers-commands.h |   6 ++
+ menus/image-menu.ui.in.in     |   2 +
+ menus/layers-menu.ui          |   2 +
+ 5 files changed, 178 insertions(+)
+
+diff --git a/app/actions/layers-actions.c b/app/actions/layers-actions.c
+index 4b03def..0bd8658 100644
+--- a/app/actions/layers-actions.c
++++ b/app/actions/layers-actions.c
+@@ -100,6 +100,18 @@ static const GimpActionEntry layers_actions[] =
+     layers_new_group_cmd_callback,
+     GIMP_HELP_LAYER_NEW },
+ 
++  { "layers-group-selected", GIMP_ICON_FOLDER_NEW,
++    NC_("layers-action", "Gr_oup Layers"), NULL, { NULL },
++    NC_("layers-action", "Put the selected layers into a new layer group"),
++    layers_group_selected_cmd_callback,
++    GIMP_HELP_LAYER_NEW },
++
++  { "layers-ungroup", NULL,
++    NC_("layers-action", "U_ngroup Layers"), NULL, { NULL },
++    NC_("layers-action", "Move the layers out of the selected layer groups and remove the groups"),
++    layers_ungroup_cmd_callback,
++    GIMP_HELP_LAYER_NEW },
++
+   { "layers-duplicate", GIMP_ICON_OBJECT_DUPLICATE,
+     NC_("layers-action", "D_uplicate Layers"), NULL, { "<primary><shift>D", NULL },
+     NC_("layers-action",
+@@ -1037,6 +1049,8 @@ layers_actions_update (GimpActionGroup *group,
+   SET_SENSITIVE ("layers-new-last-values",  image);
+   SET_SENSITIVE ("layers-new-from-visible", image);
+   SET_SENSITIVE ("layers-new-group",        image && !indexed && !fs);
++  SET_SENSITIVE ("layers-group-selected",   n_selected_layers > 0 && !indexed && !fs && !ac);
++  SET_SENSITIVE ("layers-ungroup",          n_selected_layers > 0 && !fs && !ac && have_groups);
+   SET_SENSITIVE ("layers-duplicate",        n_selected_layers > 0 && !fs && !ac);
+   SET_SENSITIVE ("layers-delete",           n_selected_layers > 0 && !ac);
+ 
+diff --git a/app/actions/layers-commands.c b/app/actions/layers-commands.c
+index 7a583ab..daacbca 100644
+--- a/app/actions/layers-commands.c
++++ b/app/actions/layers-commands.c
+@@ -44,6 +44,7 @@
+ #include "core/gimpimage-merge.h"
+ #include "core/gimpimage-undo.h"
+ #include "core/gimpimage-undo-push.h"
++#include "core/gimpitemstack.h"
+ #include "core/gimpitemundo.h"
+ #include "core/gimplayerpropundo.h"
+ #include "core/gimplayer-floating-selection.h"
+@@ -655,6 +656,159 @@ layers_new_group_cmd_callback (GimpAction *action,
+ 
+ }
+ 
++/* The selected layers in stacking order (top first), leaving out a layer
++ * whose ancestor group is selected too (it moves along with that group).
++ */
++static GList *
++layers_get_selected_top_level_sorted (GimpImage *image)
++{
++  GList *selected = gimp_image_get_selected_layers (image);
++  GList *all      = gimp_image_get_layer_list (image);
++  GList *result   = NULL;
++  GList *iter;
++
++  for (iter = all; iter; iter = iter->next)
++    {
++      GimpItem *item = iter->data;
++      GimpItem *parent;
++      gboolean  skip = FALSE;
++
++      if (! g_list_find (selected, item))
++        continue;
++
++      for (parent = gimp_item_get_parent (item);
++           parent;
++           parent = gimp_item_get_parent (parent))
++        {
++          if (g_list_find (selected, parent))
++            {
++              skip = TRUE;
++              break;
++            }
++        }
++
++      if (! skip)
++        result = g_list_prepend (result, item);
++    }
++
++  g_list_free (all);
++
++  return g_list_reverse (result);
++}
++
++void
++layers_group_selected_cmd_callback (GimpAction *action,
++                                    GVariant   *value,
++                                    gpointer    data)
++{
++  GimpImage *image;
++  GList     *layers;
++  GList     *iter;
++  GimpLayer *group;
++  GimpItem  *parent;
++  gint       position;
++  gint       index = 0;
++  return_if_no_image (image, data);
++
++  if (gimp_image_get_floating_selection (image))
++    return;
++
++  layers = layers_get_selected_top_level_sorted (image);
++
++  if (! layers)
++    return;
++
++  /* the new group takes the place of the topmost selected layer */
++  parent   = gimp_item_get_parent (layers->data);
++  position = gimp_item_get_index (layers->data);
++
++  gimp_image_undo_group_start (image, GIMP_UNDO_GROUP_LAYER_ADD,
++                               _("Group Layers"));
++
++  group = gimp_group_layer_new (image);
++  gimp_image_add_layer (image, group, GIMP_LAYER (parent), position, TRUE);
++
++  for (iter = layers; iter; iter = iter->next)
++    gimp_image_reorder_item (image, iter->data, GIMP_ITEM (group), index++,
++                             TRUE, NULL);
++
++  g_list_free (layers);
++
++  {
++    GList *new_selected = g_list_prepend (NULL, group);
++
++    gimp_image_set_selected_layers (image, new_selected);
++    g_list_free (new_selected);
++  }
++
++  gimp_image_undo_group_end (image);
++  gimp_image_flush (image);
++}
++
++void
++layers_ungroup_cmd_callback (GimpAction *action,
++                             GVariant   *value,
++                             gpointer    data)
++{
++  GimpImage *image;
++  GList     *layers;
++  GList     *groups       = NULL;
++  GList     *new_selected = NULL;
++  GList     *iter;
++  return_if_no_image (image, data);
++
++  if (gimp_image_get_floating_selection (image))
++    return;
++
++  layers = layers_get_selected_top_level_sorted (image);
++
++  for (iter = layers; iter; iter = iter->next)
++    if (gimp_viewable_get_children (GIMP_VIEWABLE (iter->data)))
++      groups = g_list_prepend (groups, iter->data);
++
++  g_list_free (layers);
++
++  if (! groups)
++    return;
++
++  gimp_image_undo_group_start (image, GIMP_UNDO_GROUP_IMAGE_ITEM_REMOVE,
++                               _("Ungroup Layers"));
++
++  for (iter = groups; iter; iter = iter->next)
++    {
++      GimpItem      *group    = iter->data;
++      GimpItem      *parent   = gimp_item_get_parent (group);
++      GimpContainer *children = gimp_viewable_get_children (GIMP_VIEWABLE (group));
++      GList         *kids;
++      GList         *kid;
++      gint           position = gimp_item_get_index (group);
++
++      /* the group's direct children, top first; moving each one above the
++       * group keeps their order and their place in the stack
++       */
++      kids = g_list_copy (gimp_item_stack_get_item_iter (GIMP_ITEM_STACK (children)));
++
++      for (kid = kids; kid; kid = kid->next)
++        {
++          gimp_image_reorder_item (image, kid->data, parent, position++,
++                                   TRUE, NULL);
++          new_selected = g_list_prepend (new_selected, kid->data);
++        }
++
++      g_list_free (kids);
++
++      gimp_image_remove_layer (image, GIMP_LAYER (group), TRUE, NULL);
++    }
++
++  g_list_free (groups);
++
++  gimp_image_set_selected_layers (image, new_selected);
++  g_list_free (new_selected);
++
++  gimp_image_undo_group_end (image);
++  gimp_image_flush (image);
++}
++
+ void
+ layers_select_cmd_callback (GimpAction *action,
+                             GVariant   *value,
+diff --git a/app/actions/layers-commands.h b/app/actions/layers-commands.h
+index 4a105b4..95f3bcf 100644
+--- a/app/actions/layers-commands.h
++++ b/app/actions/layers-commands.h
+@@ -44,6 +44,12 @@ void   layers_new_from_visible_cmd_callback   (GimpAction *action,
+ void   layers_new_group_cmd_callback          (GimpAction *action,
+                                                GVariant   *value,
+                                                gpointer    data);
++void   layers_group_selected_cmd_callback     (GimpAction *action,
++                                               GVariant   *value,
++                                               gpointer    data);
++void   layers_ungroup_cmd_callback            (GimpAction *action,
++                                               GVariant   *value,
++                                               gpointer    data);
+ 
+ void   layers_select_cmd_callback             (GimpAction *action,
+                                                GVariant   *value,
+diff --git a/menus/image-menu.ui.in.in b/menus/image-menu.ui.in.in
+index 27b8185..a8f6274 100644
+--- a/menus/image-menu.ui.in.in
++++ b/menus/image-menu.ui.in.in
+@@ -425,6 +425,8 @@
+         <item><attribute name="action">app.layers-new</attribute></item>
+         <item><attribute name="action">app.layers-new-from-visible</attribute></item>
+         <item><attribute name="action">app.layers-new-group</attribute></item>
++        <item><attribute name="action">app.layers-group-selected</attribute></item>
++        <item><attribute name="action">app.layers-ungroup</attribute></item>
+         <item><attribute name="action">app.layers-duplicate</attribute></item>
+         <item><attribute name="action">app.layers-anchor</attribute></item>
+         <item><attribute name="action">app.layers-merge-down</attribute></item>
+diff --git a/menus/layers-menu.ui b/menus/layers-menu.ui
+index 11535fe..5c5c4bc 100644
+--- a/menus/layers-menu.ui
++++ b/menus/layers-menu.ui
+@@ -47,6 +47,8 @@
+         <item><attribute name="action">app.layers-new</attribute></item>
+         <item><attribute name="action">app.layers-new-from-visible</attribute></item>
+         <item><attribute name="action">app.layers-new-group</attribute></item>
++        <item><attribute name="action">app.layers-group-selected</attribute></item>
++        <item><attribute name="action">app.layers-ungroup</attribute></item>
+     <!--
+         <item><attribute name="action">app.layers-raise</attribute></item>
+         <item><attribute name="action">app.layers-raise-to-top</attribute></item>
+-- 
+2.55.0.windows.3
+
