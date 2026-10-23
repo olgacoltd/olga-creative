@@ -58,13 +58,50 @@ try {
         Write-Output "started $Name via WMI (cmd pid $($r.ProcessId))"
         $started = $true
     } else {
-        Write-Output "WMI Win32_Process.Create returned $($r.ReturnValue); trying a scheduled task"
+        Write-Output "WMI Win32_Process.Create returned $($r.ReturnValue); trying job breakaway"
     }
 } catch {
-    Write-Output "WMI not available ($($_.Exception.Message.Split([char]10)[0])); trying a scheduled task"
+    Write-Output "WMI not available ($($_.Exception.Message.Split([char]10)[0])); trying job breakaway"
 }
 
-# 2) One-shot scheduled task for the current user (works for non-admin users with S4U).
+# 2) CreateProcess with CREATE_BREAKAWAY_FROM_JOB: leaves the ssh session's job object if it allows breakaway.
+if (-not $started) {
+    try {
+        Add-Type -ErrorAction Stop -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public static class OlgaSpawn {
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    struct STARTUPINFO { public int cb; public string r, d, t; public int x, y, w, h, cx, cy, fa, fl; public short sw, cr; public IntPtr r2, i, o, e; }
+    [StructLayout(LayoutKind.Sequential)]
+    struct PROCESS_INFORMATION { public IntPtr hp, ht; public int pid, tid; }
+    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    static extern bool CreateProcess(string app, string cmd, IntPtr pa, IntPtr ta, bool inherit, uint flags, IntPtr env, string cwd, ref STARTUPINFO si, out PROCESS_INFORMATION pi);
+    [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr h);
+    public static int Start(string cmd, string cwd) {
+        var si = new STARTUPINFO(); si.cb = Marshal.SizeOf(si);
+        PROCESS_INFORMATION pi;
+        // CREATE_BREAKAWAY_FROM_JOB | CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP
+        if (!CreateProcess(null, cmd, IntPtr.Zero, IntPtr.Zero, false, 0x01000000 | 0x08000000 | 0x00000200, IntPtr.Zero, cwd, ref si, out pi))
+            return -Marshal.GetLastWin32Error();
+        CloseHandle(pi.hp); CloseHandle(pi.ht);
+        return pi.pid;
+    }
+}
+'@
+        $bpid = [OlgaSpawn]::Start("cmd.exe $cmdArgs", $PSScriptRoot)
+        if ($bpid -gt 0) {
+            Write-Output "started $Name via job breakaway (cmd pid $bpid)"
+            $started = $true
+        } else {
+            Write-Output "job breakaway refused (win32 error $(-$bpid)); trying a scheduled task"
+        }
+    } catch {
+        Write-Output "job breakaway failed ($($_.Exception.Message)); trying a scheduled task"
+    }
+}
+
+# 3) One-shot scheduled task for the current user (S4U: runs without a stored password).
 #    The task is named OlgaBuild-<Name>; it is removed by the next run-detached call or cleanup.ps1.
 if (-not $started) {
     $taskName = "OlgaBuild-$Name"
@@ -84,7 +121,7 @@ if (-not $started) {
     }
 }
 
-# 3) Last resort: plain detached process. May die with the ssh session on some OpenSSH builds.
+# 4) Last resort: plain detached process. May die with the ssh session on some OpenSSH builds.
 if (-not $started) {
     Start-Process -FilePath 'cmd.exe' -ArgumentList $cmdArgs -WorkingDirectory $PSScriptRoot -WindowStyle Hidden
     Write-Output "started $Name via Start-Process (WARNING: may stop if this ssh session ends)"
