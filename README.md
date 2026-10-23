@@ -115,6 +115,7 @@ Source patches (`branding/inkscape/patches`):
    MSI upgrade GUID, dist file names.
 6. `0006` installs `COPYING`, `LICENSES\` and a branded `NOTICE.txt` ("based on Inkscape", where the source is)
    into every package (zip and installer).
+7. `0007` replaces upstream's `Run Inkscape !.bat` launchers (they start `inkscape.exe`) with `<nameAscii>.bat`.
 
 Data branding (`apply-branding.py`):
 

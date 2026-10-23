@@ -137,6 +137,8 @@ if ($Jobs -le 0) { $Jobs = Get-DefaultJobs }    # CPU threads minus 2, at Idle p
 Write-Step "build: ninja -j $Jobs install/strip"
 $tb = Get-Date
 $b = ConvertTo-MsysPath $build
+# fresh install tree every time, so files dropped by a branding change do not linger in the package
+if (Test-Path $prefix) { Remove-Item -Recurse -Force $prefix }
 $ccacheDir = ConvertTo-MsysPath (Join-Path $Root 'ccache')
 Invoke-Msys $msys "export CCACHE_DIR='$ccacheDir'; ninja -C '$b' -j $Jobs install/strip"
 Write-Step ("build: done in {0:N1} min" -f ((Get-Date) - $tb).TotalMinutes)

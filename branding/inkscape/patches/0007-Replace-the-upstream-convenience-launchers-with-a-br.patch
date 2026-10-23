@@ -1,0 +1,37 @@
+From 761c27c79fbf692789d5a68fd1ed1576d8c6072d Mon Sep 17 00:00:00 2001
+From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
+Date: Fri, 23 Oct 2026 19:07:20 +0800
+Subject: [PATCH] Replace the upstream convenience launchers with a branded one
+
+---
+ CMakeScripts/InstallMSYS2.cmake | 8 +++-----
+ packaging/olga/launcher.bat.in  | 2 ++
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+ create mode 100644 packaging/olga/launcher.bat.in
+
+diff --git a/CMakeScripts/InstallMSYS2.cmake b/CMakeScripts/InstallMSYS2.cmake
+index 0bc75eb..2c9b8f2 100644
+--- a/CMakeScripts/InstallMSYS2.cmake
++++ b/CMakeScripts/InstallMSYS2.cmake
+@@ -414,10 +414,8 @@ if(WIN32)
+       DESTINATION .)
+   endif()
+ 
+-  # convenience launchers
+-  install(FILES
+-    "packaging/win32/Run Inkscape !.bat"
+-    "packaging/win32/Run Inkscape with GTK Inspector.bat"
+-    DESTINATION .)
++  # convenience launcher (branded; the upstream ones start inkscape.exe, which a branded build does not have)
++  configure_file(packaging/olga/launcher.bat.in "${CMAKE_BINARY_DIR}/${OLGA_BRAND_NAME_ASCII}.bat" @ONLY NEWLINE_STYLE CRLF)
++  install(FILES "${CMAKE_BINARY_DIR}/${OLGA_BRAND_NAME_ASCII}.bat" DESTINATION .)
+ 
+ endif()
+diff --git a/packaging/olga/launcher.bat.in b/packaging/olga/launcher.bat.in
+new file mode 100644
+index 0000000..b33c681
+--- /dev/null
++++ b/packaging/olga/launcher.bat.in
+@@ -0,0 +1,2 @@
++cd /d "%~dp0bin"
++start "" @OLGA_BRAND_ID@.exe %*
