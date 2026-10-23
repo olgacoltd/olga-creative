@@ -295,8 +295,25 @@ def brand_artwork():
     print('artwork: installer bitmaps')
 
 
+# ---------------------------------------------------------------------------------------
+# 4. helper scripts shipped in the package
+# ---------------------------------------------------------------------------------------
+def brand_scripts():
+    bt = p('packaging', 'win32', 'gdb_create_backtrace.bat')
+    s = open(bt, encoding='utf-8').read()
+    s = (s.replace('inkscape.com', INK['id'] + '.com').replace('inkscape.exe', INK['id'] + '.exe')
+          .replace('inkscape_backtrace.txt', INK['id'] + '_backtrace.txt')
+          .replace('INKSCAPE VERSION', NAME.upper() + ' VERSION').replace('Inkscape', NAME))
+    s = '\n'.join(l for l in s.split('\n') if 'inkscape.org/report' not in l)
+    open(bt, 'w', encoding='utf-8', newline='\r\n').write(s.replace('\r\n', '\n'))
+    dbg = p('packaging', 'win32', 'Run Inkscape and create debug trace.bat')
+    # unchanged content (it only starts gdb_create_backtrace.bat); installed under a branded name by patch 0007
+    print('scripts: gdb_create_backtrace.bat branded (%s)' % ('ok' if os.path.exists(dbg) else 'launcher missing'))
+
+
 if __name__ == '__main__':
     brand_keymap()
     brand_translations()
     brand_artwork()
+    brand_scripts()
     print('branding applied: %s' % NAME)

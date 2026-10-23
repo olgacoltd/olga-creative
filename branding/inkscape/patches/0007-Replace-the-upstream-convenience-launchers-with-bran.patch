@@ -1,20 +1,25 @@
-From 761c27c79fbf692789d5a68fd1ed1576d8c6072d Mon Sep 17 00:00:00 2001
+From b8bb6023fe24441836fde4de10b73d96e2e9f5e2 Mon Sep 17 00:00:00 2001
 From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
 Date: Fri, 23 Oct 2026 19:07:20 +0800
-Subject: [PATCH] Replace the upstream convenience launchers with a branded one
+Subject: [PATCH] Replace the upstream convenience launchers with branded ones
 
 ---
- CMakeScripts/InstallMSYS2.cmake | 8 +++-----
- packaging/olga/launcher.bat.in  | 2 ++
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ CMakeScripts/InstallMSYS2.cmake | 11 +++++------
+ packaging/olga/launcher.bat.in  |  2 ++
+ 2 files changed, 7 insertions(+), 6 deletions(-)
  create mode 100644 packaging/olga/launcher.bat.in
 
 diff --git a/CMakeScripts/InstallMSYS2.cmake b/CMakeScripts/InstallMSYS2.cmake
-index 0bc75eb..2c9b8f2 100644
+index 0bc75eb..8b1b3bc 100644
 --- a/CMakeScripts/InstallMSYS2.cmake
 +++ b/CMakeScripts/InstallMSYS2.cmake
-@@ -414,10 +414,8 @@ if(WIN32)
-       DESTINATION .)
+@@ -411,13 +411,12 @@ if(WIN32)
+     # convenience launcher
+     install(FILES
+       "packaging/win32/Run Inkscape and create debug trace.bat"
+-      DESTINATION .)
++      DESTINATION .
++      RENAME "${OLGA_BRAND_NAME_ASCII} - create debug trace.bat")
    endif()
  
 -  # convenience launchers
