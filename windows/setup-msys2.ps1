@@ -32,8 +32,7 @@ param(
 )
 . "$PSScriptRoot\common.ps1"
 
-# gimp mode: put -Mirror first in every pacman mirror list and download through curl with the same rate cap
-# as Get-File (pacman's own downloader cannot be capped). Idempotent; re-applied on every run because a
+# gimp mode: put -Mirror first in every pacman mirror list. Idempotent; re-applied on every run because a
 # pacman-mirrors update may rewrite the lists.
 #   pacman has no inline comments, so each injected line is preceded by a marker comment line.
 function Remove-OlgaLines([string[]]$lines, [string]$marker) {
@@ -63,19 +62,11 @@ function Set-PacmanDownloads([string]$msys) {
     }
     $conf = Join-Path $msys 'etc\pacman.conf'
     $xMark = '# olga-xfer: the next line was added by setup-msys2.ps1 (download rate cap, OLGA_DOWNLOAD_RATE)'
-    $rate = Get-DownloadRate
+    # Earlier versions routed pacman through a rate-capped curl XferCommand. Removed: database downloads made
+    # that way regularly failed signature checks ("signature ... is invalid") while pacman's own downloader
+    # succeeded. Database syncs and the base update stay with pacman (a few hundred MB at most); the large
+    # package set is fetched by the capped, resumable prefetch below.
     $lines = Remove-OlgaLines ([IO.File]::ReadAllLines($conf)) $xMark
-    if ($rate -and (Test-Path (Join-Path $msys 'usr\bin\curl.exe'))) {
-        $out = @()
-        foreach ($l in $lines) {
-            $out += $l
-            if ($l -match '^\[options\]') {
-                $out += $xMark
-                $out += "XferCommand = /usr/bin/curl -L -C - -f --retry 5 --retry-delay 5 --limit-rate $rate -o %o %u"
-            }
-        }
-        $lines = $out
-    }
     [IO.File]::WriteAllText($conf, ($lines -join $nl) + $nl, $utf8)
 }
 
