@@ -1,0 +1,274 @@
+From 39550a70900f91de2b50b9b141e28933ccc5e717 Mon Sep 17 00:00:00 2001
+From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
+Date: Fri, 23 Oct 2026 22:36:20 +0800
+Subject: [PATCH 5/5] Brand the Inno installer (names, ids, registry keys,
+ URLs, licence files)
+
+---
+ build/windows/installer/gimp-setup.iss | 122 +++++++++++++------------
+ 1 file changed, 63 insertions(+), 59 deletions(-)
+
+diff --git a/build/windows/installer/gimp-setup.iss b/build/windows/installer/gimp-setup.iss
+index e86ebf5..d121c7d 100644
+--- a/build/windows/installer/gimp-setup.iss
++++ b/build/windows/installer/gimp-setup.iss
+@@ -103,7 +103,7 @@
+ #else
+   #define CUSTOM_GIMP_VERSION ORIGINAL_GIMP_VERSION + "-" + REVISION
+ #endif
+-#define DISPLAY_NAME "GIMP " + CUSTOM_GIMP_VERSION
++#define DISPLAY_NAME OLGA_BRAND_NAME_ASCII + " " + OLGA_BRAND_VERSION
+ 
+ ;This script supports creating both an installer per arch or an universal installer with all arches
+ #if Defined(ARM64_BUNDLE) && !Defined(X64_BUNDLE)
+@@ -156,13 +156,13 @@ NotRecognizedMessagesWarning=no
+ 
+ ;3.2.1 INNO INTERNAL VERSIONING (used to rule how different versions are installed)
+ ;GIMP process identifier for Inno
+-AppMutex=GIMP-{#GIMP_MUTEX_VERSION}
++AppMutex={#OLGA_BRAND_NAME_ASCII}-{#GIMP_MUTEX_VERSION}
+ ;Inno installer identifier
+-SetupMutex=GIMP-{#GIMP_MUTEX_VERSION}-setup
++SetupMutex={#OLGA_BRAND_NAME_ASCII}-{#GIMP_MUTEX_VERSION}-setup
+ ;Inno installer (default) install location
+-DefaultDirName={autopf}\GIMP {#GIMP_MUTEX_VERSION}
++DefaultDirName={autopf}\{#OLGA_BRAND_NAME_ASCII} {#GIMP_MUTEX_VERSION}
+ ;Inno uninstaller identifier
+-AppID=GIMP-{#GIMP_MUTEX_VERSION}
++AppID={#OLGA_BRAND_NAME_ASCII}-{#GIMP_MUTEX_VERSION}
+ ;Inno unninstaller identifier logs location
+ UninstallFilesDir={app}\uninst
+ 
+@@ -176,18 +176,18 @@ AppVersion={#FULL_GIMP_VERSION}
+ ;ImmersiveControlPanel 'DisplayName'
+ AppVerName={#DISPLAY_NAME}
+ ;ImmersiveControlPanel 'DisplayIcon'
+-UninstallDisplayIcon={app}\bin\gimp-{#GIMP_MUTEX_VERSION}.exe
++UninstallDisplayIcon={app}\bin\{#OLGA_BRAND_ID}.exe
+ ;ImmersiveControlPanel 'Publisher'
+-AppPublisher=The GIMP Team
++AppPublisher={#OLGA_BRAND_VENDOR}
+ ;ControlPanel 'URLInfoAbout'
+-AppPublisherURL=https://www.gimp.org/
++AppPublisherURL={#OLGA_BRAND_URL}
+ ;ControlPanel 'HelpLink'
+-AppSupportURL=https://www.gimp.org/docs/
++AppSupportURL={#OLGA_BRAND_URL}
+ #if Defined(GIMP_UNSTABLE)
+   ;ControlPanel 'URLUpdateInfo'
+-  AppUpdatesURL=https://www.gimp.org/downloads/devel/
++  AppUpdatesURL={#OLGA_BRAND_URL}
+ #else
+-  AppUpdatesURL=https://www.gimp.org/downloads/
++  AppUpdatesURL={#OLGA_BRAND_URL}
+ #endif
+ 
+ 
+@@ -217,10 +217,10 @@ LZMANumFastBytes=273
+ ;SignedUninstallerDir=_Uninst
+ 
+ ;3.3.3 EXE FILE DETAILS
+-AppName=GIMP
++AppName={#OLGA_BRAND_NAME_ASCII}
+ SetupIconFile={#ASSETS_DIR}\setup.ico
+ OutputDir=..\..\..
+-OutputBaseFileName=gimp-{#CUSTOM_GIMP_VERSION}-setup
++OutputBaseFileName={#OLGA_BRAND_ID}-{#OLGA_BRAND_VERSION}-setup
+ OutputManifestFile=inno.log
+ ArchitecturesAllowed={#ARCHS_ALLOWED}
+ ArchitecturesInstallIn64BitMode={#ARCHS_INSTALLED}
+@@ -261,10 +261,10 @@ WelcomeFontSize=12
+ [Tasks]
+ Name: desktopicon; Description: "{cm:AdditionalIconsDesktop}"; GroupDescription: "{cm:AdditionalIcons}"
+ [Icons]
+-Name: "{autoprograms}\{#DISPLAY_NAME}"; Filename: "{app}\bin\gimp-{#GIMP_MUTEX_VERSION}.exe"; WorkingDir: "%USERPROFILE%"; Comment: "{#DISPLAY_NAME}"
+-Name: "{autodesktop}\{#DISPLAY_NAME}"; Filename: "{app}\bin\gimp-{#GIMP_MUTEX_VERSION}.exe"; WorkingDir: "%USERPROFILE%"; Comment: "{#DISPLAY_NAME}"; Tasks: desktopicon
++Name: "{autoprograms}\{#DISPLAY_NAME}"; Filename: "{app}\bin\{#OLGA_BRAND_ID}.exe"; WorkingDir: "%USERPROFILE%"; Comment: "{#DISPLAY_NAME}"
++Name: "{autodesktop}\{#DISPLAY_NAME}"; Filename: "{app}\bin\{#OLGA_BRAND_ID}.exe"; WorkingDir: "%USERPROFILE%"; Comment: "{#DISPLAY_NAME}"; Tasks: desktopicon
+ [Run]
+-Filename: "{app}\bin\gimp-{#GIMP_MUTEX_VERSION}.exe"; Description: "{cm:LaunchGimp}"; Flags: unchecked postinstall nowait skipifsilent
++Filename: "{app}\bin\{#OLGA_BRAND_ID}.exe"; Description: "{cm:LaunchGimp}"; Flags: unchecked postinstall nowait skipifsilent
+ 
+ 
+ ;4.1 GIMP FILES (make sure that the resulting .exe installer content is identical to the .msix and vice-versa)
+@@ -368,6 +368,10 @@ Source: "{#MAIN_BUNDLE}\share\gimp\*"; DestDir: "{app}\share\gimp"; Components:
+ Source: "{#MAIN_BUNDLE}\share\icons\hicolor\*"; DestDir: "{app}\share\icons\hicolor"; Components: {#GIMP_ARCHS}; Flags: {#COMMON_FLAGS}
+ Source: "{#MAIN_BUNDLE}\etc\*"; DestDir: "{app}\etc"; Excludes: "gimp,ssl"; Components: {#DEPS_ARCHS}; Flags: {#COMMON_FLAGS}
+ Source: "{#MAIN_BUNDLE}\share\*"; DestDir: "{app}\share"; Excludes: "gimp,icons\hicolor,locale\*,mypaint-data"; Components: {#DEPS_ARCHS}; Flags: {#COMMON_FLAGS} createallsubdirs
++;olga-creative: licence, NOTICE (based-on credit) and the launcher at the install root
++Source: "{#MAIN_BUNDLE}\COPYING"; DestDir: "{app}"; Components: {#GIMP_ARCHS}; Flags: {#COMMON_FLAGS}
++Source: "{#MAIN_BUNDLE}\LICENSE"; DestDir: "{app}"; Components: {#GIMP_ARCHS}; Flags: {#COMMON_FLAGS}
++Source: "{#MAIN_BUNDLE}\NOTICE.txt"; DestDir: "{app}"; Components: {#GIMP_ARCHS}; Flags: {#COMMON_FLAGS}
+ 
+ ;Optional arch-neutral files (full install)
+ #ifdef LUA
+@@ -496,8 +500,8 @@ Type: filesandordirs; Name: "{app}\lib\python{#PREVIOUS_PYTHON_VERSION}\*"
+ Type: filesandordirs; Name: "{app}\32\*"
+ Type: filesandordirs; Name: "{app}\lib\gimp\{#GIMP_PKGCONFIG_VERSION}\plug-ins\twain\*"
+ ;get previous GIMP icon name from uninstall name in Registry
+-Type: files; Name: "{autoprograms}\{reg:HKA\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\GIMP-{#GIMP_MUTEX_VERSION}_is1,DisplayName|GIMP {#GIMP_MUTEX_VERSION}}.lnk"; Check: CheckRegValueExists('SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\GIMP-{#GIMP_MUTEX_VERSION}_is1','DisplayName')
+-Type: files; Name: "{autodesktop}\{reg:HKA\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\GIMP-{#GIMP_MUTEX_VERSION}_is1,DisplayName|GIMP {#GIMP_MUTEX_VERSION}}.lnk"; Check: CheckRegValueExists('SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\GIMP-{#GIMP_MUTEX_VERSION}_is1','DisplayName')
++Type: files; Name: "{autoprograms}\{reg:HKA\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{#OLGA_BRAND_NAME_ASCII}-{#GIMP_MUTEX_VERSION}_is1,DisplayName|{#OLGA_BRAND_NAME_ASCII} {#GIMP_MUTEX_VERSION}}.lnk"; Check: CheckRegValueExists('SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{#OLGA_BRAND_NAME_ASCII}-{#GIMP_MUTEX_VERSION}_is1','DisplayName')
++Type: files; Name: "{autodesktop}\{reg:HKA\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{#OLGA_BRAND_NAME_ASCII}-{#GIMP_MUTEX_VERSION}_is1,DisplayName|{#OLGA_BRAND_NAME_ASCII} {#GIMP_MUTEX_VERSION}}.lnk"; Check: CheckRegValueExists('SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{#OLGA_BRAND_NAME_ASCII}-{#GIMP_MUTEX_VERSION}_is1','DisplayName')
+ ;.pdb files are taken care by RemoveDebugFilesFromDir procedure
+ 
+ [UninstallDelete]
+@@ -510,24 +514,24 @@ Type: files; Name: "{app}\lib\gimp\{#GIMP_PKGCONFIG_VERSION}\environ\pygimp_win.
+ ;4.3 KEYS TO BE REGISTERED
+ [Registry]
+ ;'ms-settings:appsfeatures' page (using info from 3.2.3 [Setup] section above)
+-;Root: HKA; Subkey: "Software\Microsoft\Windows\CurrentVersion\Uninstall\GIMP-{#GIMP_MUTEX_VERSION}_is1"; //(auto registered by Inno)
++;Root: HKA; Subkey: "Software\Microsoft\Windows\CurrentVersion\Uninstall\{#OLGA_BRAND_NAME_ASCII}-{#GIMP_MUTEX_VERSION}_is1"; //(auto registered by Inno)
+ 
+ ;Add GIMP .exe to PATH/'Win + R' (conflicts with MSIX. See: ..\store\AppxManifest.xml)
+-;Root: HKA; Subkey: "Software\Microsoft\Windows\CurrentVersion\App Paths\gimp-{#GIMP_MUTEX_VERSION}.exe"; Flags: uninsdeletekey
+-;Root: HKA; Subkey: "Software\Microsoft\Windows\CurrentVersion\App Paths\gimp-{#GIMP_MUTEX_VERSION}.exe"; ValueType: string; ValueName: ""; ValueData: "{app}\bin\gimp-{#GIMP_MUTEX_VERSION}.exe"
+-;Root: HKA; Subkey: "Software\Microsoft\Windows\CurrentVersion\App Paths\gimp-{#GIMP_MUTEX_VERSION}.exe"; ValueType: string; ValueName: "Path"; ValueData: "{app}\bin"
++;Root: HKA; Subkey: "Software\Microsoft\Windows\CurrentVersion\App Paths\{#OLGA_BRAND_ID}.exe"; Flags: uninsdeletekey
++;Root: HKA; Subkey: "Software\Microsoft\Windows\CurrentVersion\App Paths\{#OLGA_BRAND_ID}.exe"; ValueType: string; ValueName: ""; ValueData: "{app}\bin\{#OLGA_BRAND_ID}.exe"
++;Root: HKA; Subkey: "Software\Microsoft\Windows\CurrentVersion\App Paths\{#OLGA_BRAND_ID}.exe"; ValueType: string; ValueName: "Path"; ValueData: "{app}\bin"
+ 
+ ;Shell "Open with"
+-Root: HKA; Subkey: "Software\Classes\Applications\gimp-{#GIMP_MUTEX_VERSION}.exe"; Flags: uninsdeletekey
+-Root: HKA; Subkey: "Software\Classes\Applications\gimp-{#GIMP_MUTEX_VERSION}.exe"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "{#DISPLAY_NAME}"
+-Root: HKA; Subkey: "Software\Classes\Applications\gimp-{#GIMP_MUTEX_VERSION}.exe\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\bin\gimp-{#GIMP_MUTEX_VERSION}.exe,1"
+-Root: HKA; Subkey: "Software\Classes\Applications\gimp-{#GIMP_MUTEX_VERSION}.exe\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\gimp-{#GIMP_MUTEX_VERSION}.exe"" ""%1"""
++Root: HKA; Subkey: "Software\Classes\Applications\{#OLGA_BRAND_ID}.exe"; Flags: uninsdeletekey
++Root: HKA; Subkey: "Software\Classes\Applications\{#OLGA_BRAND_ID}.exe"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "{#DISPLAY_NAME}"
++Root: HKA; Subkey: "Software\Classes\Applications\{#OLGA_BRAND_ID}.exe\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\bin\{#OLGA_BRAND_ID}.exe,1"
++Root: HKA; Subkey: "Software\Classes\Applications\{#OLGA_BRAND_ID}.exe\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\{#OLGA_BRAND_ID}.exe"" ""%1"""
+ ;'ms-settings:defaultapps' page
+-Root: HKA; Subkey: "Software\GIMP {#GIMP_MUTEX_VERSION}"; Flags: uninsdeletekey
+-Root: HKA; Subkey: "Software\GIMP {#GIMP_MUTEX_VERSION}\Capabilities"; ValueType: string; ValueName: "ApplicationName"; ValueData: "{#DISPLAY_NAME}"
+-Root: HKA; Subkey: "Software\GIMP {#GIMP_MUTEX_VERSION}\Capabilities"; ValueType: string; ValueName: "ApplicationIcon"; ValueData: "{app}\bin\gimp-{#GIMP_MUTEX_VERSION}.exe,0"
+-Root: HKA; Subkey: "Software\GIMP {#GIMP_MUTEX_VERSION}\Capabilities"; ValueType: string; ValueName: "ApplicationDescription"; ValueData: "GIMP is a free raster graphics editor used for image retouching and editing, free-form drawing, converting between different image formats, and more specialized tasks."
+-Root: HKA; Subkey: "Software\RegisteredApplications"; ValueType: string; ValueName: "GIMP {#GIMP_MUTEX_VERSION}"; ValueData: "Software\GIMP {#GIMP_MUTEX_VERSION}\Capabilities"; Flags: uninsdeletevalue
++Root: HKA; Subkey: "Software\{#OLGA_BRAND_NAME_ASCII} {#GIMP_MUTEX_VERSION}"; Flags: uninsdeletekey
++Root: HKA; Subkey: "Software\{#OLGA_BRAND_NAME_ASCII} {#GIMP_MUTEX_VERSION}\Capabilities"; ValueType: string; ValueName: "ApplicationName"; ValueData: "{#DISPLAY_NAME}"
++Root: HKA; Subkey: "Software\{#OLGA_BRAND_NAME_ASCII} {#GIMP_MUTEX_VERSION}\Capabilities"; ValueType: string; ValueName: "ApplicationIcon"; ValueData: "{app}\bin\{#OLGA_BRAND_ID}.exe,0"
++Root: HKA; Subkey: "Software\{#OLGA_BRAND_NAME_ASCII} {#GIMP_MUTEX_VERSION}\Capabilities"; ValueType: string; ValueName: "ApplicationDescription"; ValueData: "{#OLGA_BRAND_NAME_ASCII} is a raster graphics editor based on GIMP."
++Root: HKA; Subkey: "Software\RegisteredApplications"; ValueType: string; ValueName: "{#OLGA_BRAND_NAME_ASCII} {#GIMP_MUTEX_VERSION}"; ValueData: "Software\{#OLGA_BRAND_NAME_ASCII} {#GIMP_MUTEX_VERSION}\Capabilities"; Flags: uninsdeletevalue
+ ;Associations
+ #pragma option -e-
+ #define protected
+@@ -539,12 +543,12 @@ Root: HKA; Subkey: "Software\RegisteredApplications"; ValueType: string; ValueNa
+       //skip comments and empty lines
+     #else
+       #pragma message "Processing file_associations.list: " + FileLine
+-Root: HKA; Subkey: "Software\Classes\.{#FileLine}\OpenWithProgids"; ValueType: string; ValueName: "GIMP{#GIMP_MUTEX_VERSION}.{#FileLine}"; ValueData: ""; Flags: uninsdeletevalue
+-Root: HKA; Subkey: "Software\Classes\GIMP{#GIMP_MUTEX_VERSION}.{#FileLine}"; ValueType: string; ValueName: ""; ValueData: "{#DISPLAY_NAME} {#UpperCase(FileLine)}"; Flags: uninsdeletekey
+-Root: HKA; Subkey: "Software\Classes\GIMP{#GIMP_MUTEX_VERSION}.{#FileLine}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\bin\gimp-{#GIMP_MUTEX_VERSION}.exe,2"
+-Root: HKA; Subkey: "Software\Classes\GIMP{#GIMP_MUTEX_VERSION}.{#FileLine}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\gimp-{#GIMP_MUTEX_VERSION}.exe"" ""%1"""
+-Root: HKA; Subkey: "Software\Classes\Applications\gimp-{#GIMP_MUTEX_VERSION}.exe\SupportedTypes"; ValueType: string; ValueName: ".{#FileLine}"; ValueData: ""
+-Root: HKA; Subkey: "Software\GIMP {#GIMP_MUTEX_VERSION}\Capabilities\FileAssociations"; ValueType: string; ValueName: ".{#FileLine}"; ValueData: "GIMP{#GIMP_MUTEX_VERSION}.{#FileLine}"
++Root: HKA; Subkey: "Software\Classes\.{#FileLine}\OpenWithProgids"; ValueType: string; ValueName: "{#OLGA_BRAND_NAME_ASCII}{#GIMP_MUTEX_VERSION}.{#FileLine}"; ValueData: ""; Flags: uninsdeletevalue
++Root: HKA; Subkey: "Software\Classes\{#OLGA_BRAND_NAME_ASCII}{#GIMP_MUTEX_VERSION}.{#FileLine}"; ValueType: string; ValueName: ""; ValueData: "{#DISPLAY_NAME} {#UpperCase(FileLine)}"; Flags: uninsdeletekey
++Root: HKA; Subkey: "Software\Classes\{#OLGA_BRAND_NAME_ASCII}{#GIMP_MUTEX_VERSION}.{#FileLine}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\bin\{#OLGA_BRAND_ID}.exe,2"
++Root: HKA; Subkey: "Software\Classes\{#OLGA_BRAND_NAME_ASCII}{#GIMP_MUTEX_VERSION}.{#FileLine}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\{#OLGA_BRAND_ID}.exe"" ""%1"""
++Root: HKA; Subkey: "Software\Classes\Applications\{#OLGA_BRAND_ID}.exe\SupportedTypes"; ValueType: string; ValueName: ".{#FileLine}"; ValueData: ""
++Root: HKA; Subkey: "Software\{#OLGA_BRAND_NAME_ASCII} {#GIMP_MUTEX_VERSION}\Capabilities\FileAssociations"; ValueType: string; ValueName: ".{#FileLine}"; ValueData: "{#OLGA_BRAND_NAME_ASCII}{#GIMP_MUTEX_VERSION}.{#FileLine}"
+     #endif
+   #endif
+ #endsub
+@@ -556,19 +560,19 @@ Root: HKA; Subkey: "Software\GIMP {#GIMP_MUTEX_VERSION}\Capabilities\FileAssocia
+   #expr FileClose(FileHandle)
+ #endif
+ ;Associations (special case for .xcf files)
+-Root: HKA; Subkey: "Software\Classes\.xcf\OpenWithProgids"; ValueType: string; ValueName: "GIMP{#GIMP_MUTEX_VERSION}.xcf"; ValueData: ""; Flags: uninsdeletevalue
+-Root: HKA; Subkey: "Software\Classes\GIMP{#GIMP_MUTEX_VERSION}.xcf"; ValueType: string; ValueName: ""; ValueData: "{#DISPLAY_NAME} XCF"; Flags: uninsdeletekey
+-Root: HKA; Subkey: "Software\Classes\GIMP{#GIMP_MUTEX_VERSION}.xcf\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\bin\gimp-{#GIMP_MUTEX_VERSION}.exe,1"
+-Root: HKA; Subkey: "Software\Classes\GIMP{#GIMP_MUTEX_VERSION}.xcf\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\gimp-{#GIMP_MUTEX_VERSION}.exe"" ""%1"""
+-Root: HKA; Subkey: "Software\Classes\Applications\gimp-{#GIMP_MUTEX_VERSION}.exe\SupportedTypes"; ValueType: string; ValueName: ".xcf"; ValueData: ""
+-Root: HKA; Subkey: "Software\GIMP {#GIMP_MUTEX_VERSION}\Capabilities\FileAssociations"; ValueType: string; ValueName: ".xcf"; ValueData: "GIMP{#GIMP_MUTEX_VERSION}.xcf"
++Root: HKA; Subkey: "Software\Classes\.xcf\OpenWithProgids"; ValueType: string; ValueName: "{#OLGA_BRAND_NAME_ASCII}{#GIMP_MUTEX_VERSION}.xcf"; ValueData: ""; Flags: uninsdeletevalue
++Root: HKA; Subkey: "Software\Classes\{#OLGA_BRAND_NAME_ASCII}{#GIMP_MUTEX_VERSION}.xcf"; ValueType: string; ValueName: ""; ValueData: "{#DISPLAY_NAME} XCF"; Flags: uninsdeletekey
++Root: HKA; Subkey: "Software\Classes\{#OLGA_BRAND_NAME_ASCII}{#GIMP_MUTEX_VERSION}.xcf\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\bin\{#OLGA_BRAND_ID}.exe,1"
++Root: HKA; Subkey: "Software\Classes\{#OLGA_BRAND_NAME_ASCII}{#GIMP_MUTEX_VERSION}.xcf\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\{#OLGA_BRAND_ID}.exe"" ""%1"""
++Root: HKA; Subkey: "Software\Classes\Applications\{#OLGA_BRAND_ID}.exe\SupportedTypes"; ValueType: string; ValueName: ".xcf"; ValueData: ""
++Root: HKA; Subkey: "Software\{#OLGA_BRAND_NAME_ASCII} {#GIMP_MUTEX_VERSION}\Capabilities\FileAssociations"; ValueType: string; ValueName: ".xcf"; ValueData: "{#OLGA_BRAND_NAME_ASCII}{#GIMP_MUTEX_VERSION}.xcf"
+ ;Associations (make association for .ico files but do not set DefaultIcon since their content is the DefaultIcon)
+-Root: HKA; Subkey: "Software\Classes\.ico\OpenWithProgids"; ValueType: string; ValueName: "GIMP{#GIMP_MUTEX_VERSION}.ico"; ValueData: ""; Flags: uninsdeletevalue
+-Root: HKA; Subkey: "Software\Classes\GIMP{#GIMP_MUTEX_VERSION}.ico"; ValueType: string; ValueName: ""; ValueData: "{#DISPLAY_NAME} ICO"; Flags: uninsdeletekey
+-Root: HKA; Subkey: "Software\Classes\GIMP{#GIMP_MUTEX_VERSION}.ico\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "%1"
+-Root: HKA; Subkey: "Software\Classes\GIMP{#GIMP_MUTEX_VERSION}.ico\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\gimp-{#GIMP_MUTEX_VERSION}.exe"" ""%1"""
+-Root: HKA; Subkey: "Software\Classes\Applications\gimp-{#GIMP_MUTEX_VERSION}.exe\SupportedTypes"; ValueType: string; ValueName: ".ico"; ValueData: ""
+-Root: HKA; Subkey: "Software\GIMP {#GIMP_MUTEX_VERSION}\Capabilities\FileAssociations"; ValueType: string; ValueName: ".ico"; ValueData: "GIMP{#GIMP_MUTEX_VERSION}.ico"
++Root: HKA; Subkey: "Software\Classes\.ico\OpenWithProgids"; ValueType: string; ValueName: "{#OLGA_BRAND_NAME_ASCII}{#GIMP_MUTEX_VERSION}.ico"; ValueData: ""; Flags: uninsdeletevalue
++Root: HKA; Subkey: "Software\Classes\{#OLGA_BRAND_NAME_ASCII}{#GIMP_MUTEX_VERSION}.ico"; ValueType: string; ValueName: ""; ValueData: "{#DISPLAY_NAME} ICO"; Flags: uninsdeletekey
++Root: HKA; Subkey: "Software\Classes\{#OLGA_BRAND_NAME_ASCII}{#GIMP_MUTEX_VERSION}.ico\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "%1"
++Root: HKA; Subkey: "Software\Classes\{#OLGA_BRAND_NAME_ASCII}{#GIMP_MUTEX_VERSION}.ico\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\bin\{#OLGA_BRAND_ID}.exe"" ""%1"""
++Root: HKA; Subkey: "Software\Classes\Applications\{#OLGA_BRAND_ID}.exe\SupportedTypes"; ValueType: string; ValueName: ".ico"; ValueData: ""
++Root: HKA; Subkey: "Software\{#OLGA_BRAND_NAME_ASCII} {#GIMP_MUTEX_VERSION}\Capabilities\FileAssociations"; ValueType: string; ValueName: ".ico"; ValueData: "{#OLGA_BRAND_NAME_ASCII}{#GIMP_MUTEX_VERSION}.ico"
+ 
+ 
+ ;5 INSTALLER CUSTOM CODE
+@@ -1317,16 +1321,16 @@ var
+   ErrorCode: Integer;
+ begin
+   isInstalled := 'notInstalled';
+-  if RegQueryStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\GIMP-{#GIMP_MUTEX_VERSION}_is1',
++  if RegQueryStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#OLGA_BRAND_NAME_ASCII}-{#GIMP_MUTEX_VERSION}_is1',
+                            'DisplayVersion', Installed_AppVersion) then begin
+-      RegQueryStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\GIMP-{#GIMP_MUTEX_VERSION}_is1',
++      RegQueryStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#OLGA_BRAND_NAME_ASCII}-{#GIMP_MUTEX_VERSION}_is1',
+                            'InstallLocation', InstallLocation);
+     StrToVersion(Installed_AppVersion, Installed_AppVersionInt);
+     isInstalled := 'Installed';
+   end;
+-  if RegQueryStringValue(HKLM, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\GIMP-{#GIMP_MUTEX_VERSION}_is1',
++  if RegQueryStringValue(HKLM, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#OLGA_BRAND_NAME_ASCII}-{#GIMP_MUTEX_VERSION}_is1',
+                            'DisplayVersion', Installed_AppVersion) then begin
+-      RegQueryStringValue(HKLM, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\GIMP-{#GIMP_MUTEX_VERSION}_is1',
++      RegQueryStringValue(HKLM, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#OLGA_BRAND_NAME_ASCII}-{#GIMP_MUTEX_VERSION}_is1',
+                            'InstallLocation', InstallLocation);
+       StrToVersion(Installed_AppVersion, Installed_AppVersionInt);
+     isInstalled := 'Installed';
+@@ -1809,7 +1813,7 @@ var
+   ResultCode: Integer;
+ begin
+   StatusLabel(CustomMessage('CreatingRestorePoint'),'');
+-  if not ShellExec('RunAs', ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'), '-Command "$job = Start-Job -ScriptBlock { Checkpoint-Computer -Description "GIMP_' + ExpandConstant('{#CUSTOM_GIMP_VERSION}') + '_install" -RestorePointType APPLICATION_INSTALL }; Wait-Job $job -Timeout 24; if ($job.State -eq \"Running\") { Stop-Job $job -Confirm:$false }; Receive-Job $job"',
++  if not ShellExec('RunAs', ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'), '-Command "$job = Start-Job -ScriptBlock { Checkpoint-Computer -Description "{#OLGA_BRAND_NAME_ASCII}_' + ExpandConstant('{#CUSTOM_GIMP_VERSION}') + '_install" -RestorePointType APPLICATION_INSTALL }; Wait-Job $job -Timeout 24; if ($job.State -eq \"Running\") { Stop-Job $job -Confirm:$false }; Receive-Job $job"',
+                    '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+   begin
+     DebugMsg('RestorePoint','Failed to create restore point. Error code: ' + IntToStr(ResultCode));
+@@ -1968,10 +1972,10 @@ end;
+ //7.2 INSTALL: show GIMP text (aka billboard) above progress bar
+ #if Defined(GIMP_UNSTABLE)
+ const
+-  GIMP_URL = 'https://gimp.org/downloads/devel/';
++  GIMP_URL = '{#OLGA_BRAND_URL}';
+ #else
+ const
+-  GIMP_URL = 'https://gimp.org/downloads/';
++  GIMP_URL = '{#OLGA_BRAND_URL}';
+ #endif
+ 
+ procedure lblURL_OnClick(Sender: TObject);
+@@ -2516,7 +2520,7 @@ var
+   ResultCode: Integer;
+ begin
+   UninstallProgressForm.StatusLabel.Caption := CustomMessage('CreatingRestorePoint');
+-  if not ShellExec('RunAs', ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'), '-Command "$job = Start-Job -ScriptBlock { Checkpoint-Computer -Description "GIMP_' + ExpandConstant('{#CUSTOM_GIMP_VERSION}') + '_uninstall" -RestorePointType APPLICATION_UNINSTALL }; Wait-Job $job -Timeout 24; if ($job.State -eq \"Running\") { Stop-Job $job -Confirm:$false }; Receive-Job $job"',
++  if not ShellExec('RunAs', ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'), '-Command "$job = Start-Job -ScriptBlock { Checkpoint-Computer -Description "{#OLGA_BRAND_NAME_ASCII}_' + ExpandConstant('{#CUSTOM_GIMP_VERSION}') + '_uninstall" -RestorePointType APPLICATION_UNINSTALL }; Wait-Job $job -Timeout 24; if ($job.State -eq \"Running\") { Stop-Job $job -Confirm:$false }; Receive-Job $job"',
+                    '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+   begin
+     DebugMsg('RestorePointU','Failed to create restore point. Error code: ' + IntToStr(ResultCode));
+@@ -2608,7 +2612,7 @@ begin
+     //Try to make restore point before unninstalling (like before installing, see RestorePoint() on *gimp3264.iss)
+     if IsAdminInstallMode() then begin
+         RestorePointU();
+-      UninstallProgressForm.StatusLabel.Caption := FmtMessage(SetupMessage(msgStatusUninstalling),['GIMP']);
++      UninstallProgressForm.StatusLabel.Caption := FmtMessage(SetupMessage(msgStatusUninstalling),['{#OLGA_BRAND_NAME_ASCII}']);
+     end;
+ 
+     LoadStringsFromFile(ExpandConstant('{app}\uninst\uninst.inf'),asUninstInf);
+@@ -2620,7 +2624,7 @@ begin
+     if not IsAdminInstallMode() then begin
+             gimp_directory := GetEnv('GIMP{#API_MAJOR}_DIRECTORY');
+       if gimp_directory = '' then begin
+-        gimp_directory := ExpandConstant('{userappdata}\GIMP\{#GIMP_APP_VERSION}');
++        gimp_directory := ExpandConstant('{userappdata}\{#GIMPDIR}\{#GIMP_APP_VERSION}');
+       end;
+       if DirExists(gimp_directory + '\') then begin
+         if SuppressibleMsgBox(CustomMessage('UninstallConfig'), mbError, MB_YESNO or MB_DEFBUTTON2, IDNO) = IDYES then begin

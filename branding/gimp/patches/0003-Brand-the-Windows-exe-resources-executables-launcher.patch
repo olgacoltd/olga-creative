@@ -1,0 +1,190 @@
+From b02a1a099f650be35f49e8da126d6ecb9f28afcb Mon Sep 17 00:00:00 2001
+From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
+Date: Fri, 23 Oct 2026 22:21:55 +0800
+Subject: [PATCH 3/5] Brand the Windows exe resources, executables, launcher
+ and bundle (licence + NOTICE)
+
+---
+ app/meson.build                         |  4 ++--
+ build/windows/2_bundle-gimp-uni_base.py | 16 ++++++++++++----
+ build/windows/gimp-plug-ins.rc.in       |  9 +++++----
+ build/windows/gimp.rc.in                |  9 +++++----
+ build/windows/olga/NOTICE.txt.in        | 12 ++++++++++++
+ meson.build                             |  9 +++++++++
+ 6 files changed, 45 insertions(+), 14 deletions(-)
+ create mode 100644 build/windows/olga/NOTICE.txt.in
+
+diff --git a/app/meson.build b/app/meson.build
+index 758ca45..2d2f442 100644
+--- a/app/meson.build
++++ b/app/meson.build
+@@ -228,7 +228,7 @@ if enable_default_bin
+                     install_dir: get_option('bindir'))
+   else
+     meson.add_install_script(python, '-c', 'from shutil import copy2; from pathlib import Path; from sys import argv; import os; copy2(argv[1], str(Path(os.environ.get("MESON_INSTALL_DESTDIR_PREFIX")) / "bin" / argv[2]))',
+-                             gimpmain_exe.full_path(), fs.name(gimpmain_exe.name()).replace(exec_ver, '.exe'))
++                             gimpmain_exe.full_path(), olga_brand_id + '.exe') # olga-creative: branded unversioned copy
+     meson.add_install_script(python, '-c', 'from shutil import copy2; from pathlib import Path; from sys import argv; import os; copy2(argv[1], str(Path(os.environ.get("MESON_INSTALL_DESTDIR_PREFIX")) / "bin" / argv[2].replace("@0@", argv[3])))',
+                              gimpmain_exe.full_path(), fs.name(gimpmain_exe.name()).replace(exec_ver, '-@0@.exe'), gimp_mutex_version) #see the rationale on main meson.build
+   endif
+@@ -242,7 +242,7 @@ if enable_default_bin
+                       install_dir: get_option('bindir'))
+     else
+       meson.add_install_script(python, '-c', 'from shutil import copy2; from pathlib import Path; from sys import argv; import os; copy2(argv[1], str(Path(os.environ.get("MESON_INSTALL_DESTDIR_PREFIX")) / "bin" / argv[2]))',
+-                               gimpconsole_exe.full_path(), fs.name(gimpconsole_exe.name()).replace(exec_ver, '.exe'))
++                               gimpconsole_exe.full_path(), olga_brand_id + '-console.exe') # olga-creative: branded unversioned copy
+       meson.add_install_script(python, '-c', 'from shutil import copy2; from pathlib import Path; from sys import argv; import os; copy2(argv[1], str(Path(os.environ.get("MESON_INSTALL_DESTDIR_PREFIX")) / "bin" / argv[2].replace("@0@", argv[3])))',
+                                gimpconsole_exe.full_path(), fs.name(gimpconsole_exe.name()).replace(exec_ver, '-@0@.exe'), gimp_mutex_version) #see the rationale on main meson.build
+     endif
+diff --git a/build/windows/2_bundle-gimp-uni_base.py b/build/windows/2_bundle-gimp-uni_base.py
+index 373616e..ecdca06 100755
+--- a/build/windows/2_bundle-gimp-uni_base.py
++++ b/build/windows/2_bundle-gimp-uni_base.py
+@@ -37,8 +37,8 @@ GIMP_SOURCE = Path(os.getenv("MESON_SOURCE_ROOT")).as_posix()
+
+ ## System prefix: it is MSYSTEM_PREFIX
+-with open("meson-logs/meson-log.txt") as f:
++with open("meson-logs/meson-log.txt", encoding="utf-8") as f:
+   meson_log = f.read()
+-match = re.search(r"Main binary: (.*)\\bin\\python\.exe", meson_log)
++match = re.search(r"Main binary: (.*)[\\/]bin[\\/]python\.exe", meson_log) # olga-creative: meson run from bash logs '/'
+ MSYSTEM_PREFIX = Path(match.group(1).replace("\\", "/"))
+ ## GIMP prefix: as set at meson configure time
+ GIMP_PREFIX = Path(os.getenv("MESON_INSTALL_DESTDIR_PREFIX")).as_posix()
+@@ -105,7 +105,13 @@ GIMP_DISTRIB.mkdir(parents=True, exist_ok=True)
+ (GIMP_DISTRIB / ".gitignore").write_text("*\n")
+ ### Add a wrapper at tree root, less messy than having to look for the
+ ### binary inside bin/, in the middle of all the DLLs.
+-(GIMP_DISTRIB / "gimp.cmd").write_text(f"powershell bin\\gimp-{GIMP_MUTEX_VERSION}.exe\n")
++(GIMP_DISTRIB / f"{OLGA_BRAND_ID}.cmd").write_text(f'@start "" "%~dp0bin\\{OLGA_BRAND_ID}.exe" %*\n')
++
++
++## LICENCE AND UPSTREAM CREDIT (olga-creative): GPL text and a NOTICE saying what this is based on.
++bundle(GIMP_SOURCE, "COPYING")
++bundle(GIMP_SOURCE, "LICENSE")
++bundle(BUILD_DIR, "NOTICE.txt")
+ 
+ 
+ ## BUNDLE BASE (BARE MINIMUM TO RUN GTK APPS).
+@@ -166,7 +172,7 @@ fonts_conf = GIMP_DISTRIB / "etc/fonts/fonts.conf"
+ text = fonts_conf.read_text()
+ new_text = text.replace(
+   "LOCAL_APPDATA_FONTCONFIG_CACHE",
+-  f"~/AppData/Local/GIMP/{GIMP_APP_VERSION}/fontconfig/cache"
++  f"~/AppData/Local/{GIMPDIR}/{GIMP_APP_VERSION}/fontconfig/cache"
+ )
+ fonts_conf.write_text(new_text)
+ ### Needed for 'th' word breaking in Text tool etc
+@@ -210,6 +216,8 @@ bundle(MSYSTEM_PREFIX, "etc/ssl/cert.pem")
+ ## MAIN EXECUTABLES AND DEPENDENCIES
+ ### Minimal (and some additional) executables for the 'bin' folder
+ bundle(GIMP_PREFIX, "bin/gimp*.exe")
++### olga-creative: the branded copies (<brand id>.exe, <brand id>-console.exe)
++bundle(GIMP_PREFIX, f"bin/{OLGA_BRAND_ID}*.exe")
+ ### Bundled just to promote GEGL. See: https://gitlab.gnome.org/GNOME/gimp/-/issues/10580
+ bundle(GIMP_PREFIX, "bin/gegl.exe")
+ ### Deps (DLLs) of the binaries in 'bin' and 'lib' dirs
+diff --git a/build/windows/gimp-plug-ins.rc.in b/build/windows/gimp-plug-ins.rc.in
+index 760acbe..64926c9 100644
+--- a/build/windows/gimp-plug-ins.rc.in
++++ b/build/windows/gimp-plug-ins.rc.in
+@@ -4,16 +4,16 @@
+ #define _QUOTE(x) #x
+ #define QUOTE(x) _QUOTE(x)
+ 
+-#define VER_COMPANYNAME_STR         "Spencer Kimball, Peter Mattis and the GIMP Development Team"
++#define VER_COMPANYNAME_STR         "@OLGA_BRAND_VENDOR@"
+ 
+ #define VER_PRODUCTVERSION          @GIMP_MAJOR_VERSION@,@GIMP_MINOR_VERSION@,@GIMP_MICRO_VERSION@,0
+-#define VER_PRODUCTVERSION_STR      "@GIMP_MAJOR_VERSION@.@GIMP_MINOR_VERSION@.@GIMP_MICRO_VERSION@\0"
+-#define VER_PRODUCTNAME_STR         "@GIMP_FULL_NAME@"
++#define VER_PRODUCTVERSION_STR      "@OLGA_BRAND_VERSION@\0"
++#define VER_PRODUCTNAME_STR         "@OLGA_BRAND_NAME_ASCII@"
+ 
+ #define VER_FILEVERSION             @GIMP_MAJOR_VERSION@,@GIMP_MINOR_VERSION@,@GIMP_MICRO_VERSION@,0
+ #define VER_FILEVERSION_STR         "@GIMP_MAJOR_VERSION@.@GIMP_MINOR_VERSION@.@GIMP_MICRO_VERSION@.0\0"
+ 
+-#define VER_FILEDESCRIPTION_STR     "@GIMP_FULL_NAME@ Plug-In"
++#define VER_FILEDESCRIPTION_STR     "@OLGA_BRAND_NAME_ASCII@ Plug-In"
+ #define VER_INTERNALNAME_STR        QUOTE(INTERNALNAME_STR)
+ #define VER_ORIGINALFILENAME_STR    QUOTE(ORIGINALFILENAME_STR)
+ 
+@@ -52,6 +52,7 @@ BEGIN
+             VALUE "ProductName",      VER_PRODUCTNAME_STR
+             VALUE "ProductVersion",   VER_PRODUCTVERSION_STR
+             VALUE "LegalCopyright",   VER_LEGALCOPYRIGHT_STR
++            VALUE "Comments",         "Based on GIMP (GNU Image Manipulation Program), GNU GPL v3 or later"
+         END
+     END
+ 
+diff --git a/build/windows/gimp.rc.in b/build/windows/gimp.rc.in
+index ac74f05..b9d6322 100644
+--- a/build/windows/gimp.rc.in
++++ b/build/windows/gimp.rc.in
+@@ -5,16 +5,16 @@
+ #define QUOTE(x) _QUOTE(x)
+ #define CONCAT(x,y) x ## y
+ 
+-#define VER_COMPANYNAME_STR         "Spencer Kimball, Peter Mattis and the GIMP Development Team"
++#define VER_COMPANYNAME_STR         "@OLGA_BRAND_VENDOR@"
+ 
+ #define VER_PRODUCTVERSION          @GIMP_MAJOR_VERSION@,@GIMP_MINOR_VERSION@,@GIMP_MICRO_VERSION@,0
+-#define VER_PRODUCTVERSION_STR      "@GIMP_MAJOR_VERSION@.@GIMP_MINOR_VERSION@.@GIMP_MICRO_VERSION@\0"
+-#define VER_PRODUCTNAME_STR         "@GIMP_FULL_NAME@"
++#define VER_PRODUCTVERSION_STR      "@OLGA_BRAND_VERSION@\0"
++#define VER_PRODUCTNAME_STR         "@OLGA_BRAND_NAME_ASCII@"
+ 
+ #define VER_FILEVERSION             @GIMP_MAJOR_VERSION@,@GIMP_MINOR_VERSION@,@GIMP_MICRO_VERSION@,0
+ #define VER_FILEVERSION_STR         "@GIMP_MAJOR_VERSION@.@GIMP_MINOR_VERSION@.@GIMP_MICRO_VERSION@.0\0"
+ 
+-#define VER_FILEDESCRIPTION_STR     "@GIMP_FULL_NAME@"
++#define VER_FILEDESCRIPTION_STR     "@OLGA_BRAND_NAME_ASCII@"
+ #define VER_INTERNALNAME_STR        QUOTE(INTERNALNAME_STR)
+ #define VER_ORIGINALFILENAME_STR    QUOTE(ORIGINALFILENAME_STR)
+ 
+@@ -53,6 +53,7 @@ BEGIN
+             VALUE "ProductName",      VER_PRODUCTNAME_STR
+             VALUE "ProductVersion",   VER_PRODUCTVERSION_STR
+             VALUE "LegalCopyright",   VER_LEGALCOPYRIGHT_STR
++            VALUE "Comments",         "Based on GIMP (GNU Image Manipulation Program), GNU GPL v3 or later"
+         END
+     END
+ 
+diff --git a/build/windows/olga/NOTICE.txt.in b/build/windows/olga/NOTICE.txt.in
+new file mode 100644
+index 0000000..7d6056a
+--- /dev/null
++++ b/build/windows/olga/NOTICE.txt.in
+@@ -0,0 +1,12 @@
++@OLGA_BRAND_NAME@ @OLGA_BRAND_VERSION@
++
++@OLGA_BRAND_NAME@ is based on GIMP @GIMP_VERSION@, the GNU Image Manipulation Program (https://www.gimp.org/),
++Copyright (C) 1995 Spencer Kimball, Peter Mattis and the GIMP Development Team, and is distributed under the
++GNU General Public License, version 3 or later (see COPYING and LICENSE). It is not made or endorsed by the
++GIMP project.
++
++The default keyboard shortcuts, window layout, toolbox grouping and tool options are derived from PhotoGIMP
++by Diolinux (https://github.com/Diolinux/PhotoGIMP), GNU General Public License, version 3.
++
++The source code of this build, including every change made to GIMP, is available from @OLGA_BRAND_VENDOR@:
++@OLGA_BRAND_URL@
+diff --git a/meson.build b/meson.build
+index f329c35..c5b88ca 100644
+--- a/meson.build
++++ b/meson.build
+@@ -2228,6 +2228,15 @@ if platform_windows and debugging_format == 'native' and cc.get_argument_syntax(
+   meson.add_install_script(install_win_debug_script)
+ endif
+ 
++# olga-creative: NOTICE.txt (based-on credit, licence, source location) for the Windows bundle
++olga_notice_conf = configuration_data()
++olga_notice_conf.set('OLGA_BRAND_NAME',    olga_brand_name)
++olga_notice_conf.set('OLGA_BRAND_VERSION', olga_brand_version)
++olga_notice_conf.set('OLGA_BRAND_VENDOR',  olga_brand_vendor)
++olga_notice_conf.set('OLGA_BRAND_URL',     olga_brand_url)
++olga_notice_conf.set('GIMP_VERSION',       gimp_version)
++configure_file(input: 'build/windows/olga/NOTICE.txt.in', output: 'NOTICE.txt', configuration: olga_notice_conf)
++
+ # On Windows, install deps in a bundle before distributing
+ if get_option('windows-installer') or get_option('ms-store')
+   install_win_bundling_script = find_program('build/windows/2_bundle-gimp-uni_base.py')

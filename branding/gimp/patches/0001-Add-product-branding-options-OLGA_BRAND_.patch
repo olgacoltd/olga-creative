@@ -1,0 +1,61 @@
+From b2d0fad8af748e5cc3a148f8414203f95216227d Mon Sep 17 00:00:00 2001
+From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
+Date: Fri, 23 Oct 2026 22:18:57 +0800
+Subject: [PATCH 1/5] Add product branding options (OLGA_BRAND_*)
+
+---
+ meson.build       | 20 ++++++++++++++++++++
+ meson_options.txt | 11 ++++++++++-
+ 2 files changed, 30 insertions(+), 1 deletion(-)
+
+diff --git a/meson.build b/meson.build
+index b8284c9..f329c35 100644
+--- a/meson.build
++++ b/meson.build
+@@ -131,6 +131,26 @@ versionconfig.set('GIMP_MICRO_VERSION', gimp_app_version_micro)
+ versionconfig.set('GIMP_VERSION',       gimp_version)
+ versionconfig.set('GIMP_API_VERSION',   gimp_api_version)
+ 
++# Product branding (olga-creative): the product is "<brand> <gimp version><suffix>, based on GIMP"
++olga_brand_name       = get_option('olga-brand-name')
++olga_brand_name_ascii = get_option('olga-brand-name-ascii')
++olga_brand_id         = get_option('olga-brand-id')
++olga_brand_vendor     = get_option('olga-brand-vendor')
++olga_brand_url        = get_option('olga-brand-url')
++olga_brand_version    = gimp_version + get_option('olga-brand-version-suffix')
++olga_app_id           = get_option('olga-app-id')
++conf.set_quoted('OLGA_BRAND_NAME',       olga_brand_name)
++conf.set_quoted('OLGA_BRAND_NAME_ASCII', olga_brand_name_ascii)
++conf.set_quoted('OLGA_BRAND_ID',         olga_brand_id)
++conf.set_quoted('OLGA_BRAND_VENDOR',     olga_brand_vendor)
++conf.set_quoted('OLGA_BRAND_URL',        olga_brand_url)
++conf.set_quoted('OLGA_BRAND_VERSION',    olga_brand_version)
++conf.set_quoted('OLGA_APP_ID',           olga_app_id)
++versionconfig.set('OLGA_BRAND_NAME_ASCII', olga_brand_name_ascii)
++versionconfig.set('OLGA_BRAND_VENDOR',     olga_brand_vendor)
++versionconfig.set('OLGA_BRAND_VERSION',    olga_brand_version)
++message('Brand: @0@ @1@ (@2@, @3@)'.format(olga_brand_name, olga_brand_version, olga_brand_id, olga_app_id))
++
+ 
+ ################################################################################
+ # Get configuration and Meson modules
+diff --git a/meson_options.txt b/meson_options.txt
+index 424f042..4101c4c 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -1,5 +1,14 @@
++# Product branding (filled from brand.json by the olga-creative build scripts; defaults = upstream GIMP)
++option('olga-brand-name',           type: 'string', value: 'GIMP',          description: 'Product name shown to users (UTF-8)')
++option('olga-brand-name-ascii',     type: 'string', value: 'GIMP',          description: 'ASCII product name (exe resources, installer, mutex)')
++option('olga-brand-id',             type: 'string', value: 'gimp',          description: 'Lower-case id: branded executable and launcher names')
++option('olga-brand-vendor',         type: 'string', value: 'The GIMP Team', description: 'Vendor shown in exe resources and the installer')
++option('olga-brand-url',            type: 'string', value: 'https://www.gimp.org/', description: 'Product home page / source code location')
++option('olga-brand-version-suffix', type: 'string', value: '',              description: 'Appended to the GIMP version in the product version')
++option('olga-app-id',               type: 'string', value: 'org.gimp.GIMP', description: 'Application id (GApplication, unique-instance names)')
++
+ # Build properties
+-option('ansi',              type: 'boolean', value: false,  description: 'Turn on strict ansi')
++option('ansi',             type: 'boolean', value: false,  description: 'Turn on strict ansi')
+ option('enable-console-bin',type: 'boolean', value: true,   description: 'Build a console-only binary which does not link GTK')
+ option('enable-multiproc',  type: 'boolean', value: true,   description: 'Support for multiple processors')
+ option('profiling',         type: 'boolean', value: false,  description: 'Enable profiling')

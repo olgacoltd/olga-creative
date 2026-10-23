@@ -1,0 +1,127 @@
+From 8aec9919a344d17b1b95c97da51266004670c505 Mon Sep 17 00:00:00 2001
+From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
+Date: Fri, 23 Oct 2026 22:20:54 +0800
+Subject: [PATCH 2/5] Brand the product name, version, About, app id and
+ single-instance names
+
+---
+ app/about.h                | 9 +++++++--
+ app/dialogs/about-dialog.c | 8 ++++----
+ app/gimp-version.c         | 5 ++++-
+ app/gimpcoreapp.h          | 2 +-
+ app/gui/gui-unique.h       | 5 +++--
+ app/main.c                 | 2 +-
+ 6 files changed, 20 insertions(+), 11 deletions(-)
+
+diff --git a/app/about.h b/app/about.h
+index ed333b6..3048ed2 100644
+--- a/app/about.h
++++ b/app/about.h
+@@ -18,11 +18,16 @@
+ #pragma once
+ 
+ 
++/* olga-creative: the product name replaces GIMP's name in titles, About and --version */
+ #define GIMP_ACRONYM \
+-  _("GIMP")
++  OLGA_BRAND_NAME
+ 
+ #define GIMP_NAME \
+-  _("GNU Image Manipulation Program")
++  OLGA_BRAND_NAME
++
++/* Upstream credit shown next to the product name (About, --version) */
++#define OLGA_BASED_ON \
++  "Based on GIMP " GIMP_VERSION " - GNU Image Manipulation Program (https://www.gimp.org/), GNU GPL v3 or later"
+ 
+ /* The year of the last commit (UTC) will be inserted into this string. */
+ #define GIMP_COPYRIGHT \
+diff --git a/app/dialogs/about-dialog.c b/app/dialogs/about-dialog.c
+index 5ea523f..765f57f 100644
+--- a/app/dialogs/about-dialog.c
++++ b/app/dialogs/about-dialog.c
+@@ -244,10 +244,10 @@ about_dialog_create (Gimp           *gimp,
+          * installer/package revision.
+          * For instance: "2.10.18 (revision 2)"
+          */
+-        version = g_strdup_printf (_("%s (revision %d)"), GIMP_VERSION,
++        version = g_strdup_printf (_("%s (revision %d)"), OLGA_BRAND_VERSION,
+                                    gimp_version_get_revision ());
+       else
+-        version = g_strdup (GIMP_VERSION);
++        version = g_strdup (OLGA_BRAND_VERSION);
+ 
+ #ifdef PLATFORM_OSX
+       /* since `widget` is not created with gimp_dialog_new, there is no auto focus */
+@@ -261,11 +261,11 @@ about_dialog_create (Gimp           *gimp,
+                              "program-name",       GIMP_ACRONYM,
+                              "version",            version,
+                              "copyright",          copyright,
+-                             "comments",           GIMP_NAME,
++                             "comments",           OLGA_BASED_ON,
+                              "license",            GIMP_LICENSE,
+                              "wrap-license",       TRUE,
+                              "logo",               pixbuf,
+-                             "website",            "https://www.gimp.org/",
++                             "website",            OLGA_BRAND_URL,
+                              "website-label",      _("Visit the GIMP website"),
+                              "authors",            authors,
+                              "artists",            artists,
+diff --git a/app/gimp-version.c b/app/gimp-version.c
+index 3e76f02..8630505 100644
+--- a/app/gimp-version.c
++++ b/app/gimp-version.c
+@@ -70,7 +70,10 @@ gimp_version (gboolean be_verbose,
+   gchar *temp;
+ 
+   version = g_strdup_printf (localized ? _("%s version %s") : "%s version %s",
+-                             GIMP_NAME, GIMP_VERSION);;
++                             GIMP_NAME, OLGA_BRAND_VERSION);;
++  temp = g_strdup_printf ("%s (based on GIMP %s)", version, GIMP_VERSION);
++  g_free (version);
++  version = temp;
+   temp = g_strconcat (version, "\n", NULL);
+   g_free (version);
+   version = temp;
+diff --git a/app/gimpcoreapp.h b/app/gimpcoreapp.h
+index f120289..db83ad8 100644
+--- a/app/gimpcoreapp.h
++++ b/app/gimpcoreapp.h
+@@ -17,7 +17,7 @@
+ #pragma once
+ 
+ 
+-#define GIMP_APPLICATION_ID "org.gimp.GIMP"
++#define GIMP_APPLICATION_ID OLGA_APP_ID
+ 
+ enum
+ {
+diff --git a/app/gui/gui-unique.h b/app/gui/gui-unique.h
+index a556eb8..dffca1d 100644
+--- a/app/gui/gui-unique.h
++++ b/app/gui/gui-unique.h
+@@ -19,8 +19,9 @@
+ 
+ 
+ #ifdef G_OS_WIN32
+-#define GIMP_UNIQUE_WIN32_WINDOW_CLASS  L"GimpWin32UniqueHandler"
+-#define GIMP_UNIQUE_WIN32_WINDOW_NAME   L"GimpProxy"
++/* olga-creative: brand-specific, so a running upstream GIMP never receives this app's files (and vice versa) */
++#define GIMP_UNIQUE_WIN32_WINDOW_CLASS  L"" OLGA_BRAND_NAME_ASCII "Win32UniqueHandler"
++#define GIMP_UNIQUE_WIN32_WINDOW_NAME   L"" OLGA_BRAND_NAME_ASCII "Proxy"
+ #endif
+ 
+ 
+diff --git a/app/main.c b/app/main.c
+index 051a82b..4b5412b 100644
+--- a/app/main.c
++++ b/app/main.c
+@@ -680,7 +680,7 @@ main (int    argc,
+ 
+ #ifdef G_OS_WIN32
+   /* Make Inno aware of gimp process avoiding broken install/unninstall */
+-  utf8_name = g_strdup_printf ("GIMP-%s", GIMP_MUTEX_VERSION);
++  utf8_name = g_strdup_printf ("%s-%s", OLGA_BRAND_NAME_ASCII, GIMP_MUTEX_VERSION);
+   name      = g_utf8_to_utf16 (utf8_name, -1, NULL, NULL, NULL);
+ 
+   CreateMutexW (NULL, FALSE, name);

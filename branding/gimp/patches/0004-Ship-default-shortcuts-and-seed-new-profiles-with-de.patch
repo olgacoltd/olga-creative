@@ -1,0 +1,153 @@
+From d3bb4ee89f20be35f7860dcd6bfdfce8fc8c071e Mon Sep 17 00:00:00 2001
+From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
+Date: Fri, 23 Oct 2026 22:36:20 +0800
+Subject: [PATCH 4/5] Ship default shortcuts and seed new profiles with default
+ settings
+
+---
+ app/core/gimp-user-install.c | 51 ++++++++++++++++++++++++++++++++++--
+ app/menus/menus.c            |  9 +++++++
+ etc/defaults/README.txt      |  1 +
+ etc/meson.build              |  7 +++++
+ etc/shortcutsrc              |  6 +++++
+ 5 files changed, 72 insertions(+), 2 deletions(-)
+ create mode 100644 etc/defaults/README.txt
+ create mode 100644 etc/shortcutsrc
+
+diff --git a/app/core/gimp-user-install.c b/app/core/gimp-user-install.c
+index 67f7250..286864d 100644
+--- a/app/core/gimp-user-install.c
++++ b/app/core/gimp-user-install.c
+@@ -154,6 +154,7 @@ static gboolean  user_install_dir_copy           (GimpUserInstall    *install,
+                                                   GimpCopyPostProcess post_process_callback);
+ 
+ static gboolean  user_install_create_files       (GimpUserInstall    *install);
++static void      user_install_copy_defaults      (GimpUserInstall    *install);
+ static gboolean  user_install_migrate_files      (GimpUserInstall    *install);
+ 
+ 
+@@ -252,8 +253,14 @@ gimp_user_install_run (GimpUserInstall *install,
+     return FALSE;
+ 
+   if (install->migrate)
+-    if (! user_install_migrate_files (install))
+-      return FALSE;
++    {
++      if (! user_install_migrate_files (install))
++        return FALSE;
++    }
++  else
++    {
++      user_install_copy_defaults (install);
++    }
+ 
+   return user_install_create_files (install);
+ }
+@@ -1520,6 +1527,46 @@ user_install_create_files (GimpUserInstall *install)
+   return TRUE;
+ }
+ 
++/* olga-creative: seed a brand-new profile with the product's default settings
++ * (<sysconfdir>/defaults: tool options, context, ...). Migrated profiles and
++ * existing files are never touched.
++ */
++static void
++user_install_copy_defaults (GimpUserInstall *install)
++{
++  gchar       *source;
++  GDir        *dir;
++  const gchar *basename;
++
++  source = g_build_filename (gimp_sysconf_directory (), "defaults", NULL);
++  dir    = g_dir_open (source, 0, NULL);
++
++  if (dir)
++    {
++      while ((basename = g_dir_read_name (dir)) != NULL)
++        {
++          gchar *name = g_build_filename (source, basename, NULL);
++          gchar *dest = g_build_filename (gimp_directory (), basename, NULL);
++
++          if (! g_file_test (dest, G_FILE_TEST_EXISTS))
++            {
++              if (g_file_test (name, G_FILE_TEST_IS_DIR))
++                user_install_dir_copy (install, 0, name, gimp_directory (),
++                                       NULL, NULL, NULL, NULL);
++              else
++                user_install_file_copy (install, name, dest, NULL, NULL, NULL);
++            }
++
++          g_free (name);
++          g_free (dest);
++        }
++
++      g_dir_close (dir);
++    }
++
++  g_free (source);
++}
++
+ static gboolean
+ user_install_migrate_files (GimpUserInstall *install)
+ {
+diff --git a/app/menus/menus.c b/app/menus/menus.c
+index 5f72761..ad8a1dc 100644
+--- a/app/menus/menus.c
++++ b/app/menus/menus.c
+@@ -437,6 +437,15 @@ menus_restore (Gimp *gimp)
+ 
+   file = gimp_directory_file ("shortcutsrc", NULL);
+ 
++  /* olga-creative: no personal shortcuts (new profile, or they were reset):
++   * use the product's default shortcuts from the system config directory.
++   */
++  if (! g_file_query_exists (file, NULL))
++    {
++      g_object_unref (file);
++      file = gimp_sysconf_directory_file ("shortcutsrc", NULL);
++    }
++
+   if (gimp->be_verbose)
+     g_print ("Parsing '%s'\n", gimp_file_get_utf8_name (file));
+ 
+diff --git a/etc/defaults/README.txt b/etc/defaults/README.txt
+new file mode 100644
+index 0000000..5601d40
+--- /dev/null
++++ b/etc/defaults/README.txt
+@@ -0,0 +1 @@
++Files in this folder are copied into a new user profile on first start (not installed: this README).
+diff --git a/etc/meson.build b/etc/meson.build
+index 93ec8ce..d15549f 100644
+--- a/etc/meson.build
++++ b/etc/meson.build
+@@ -16,10 +16,17 @@ install_data(
+     'templaterc',
+     'toolrc',
+     'unitrc',
++    'shortcutsrc',
+   ],
+   install_dir: gimpsysconfdir,
+ )
+ 
++# olga-creative: product defaults copied into every new user profile (see gimp-user-install.c)
++install_subdir('defaults',
++  install_dir: gimpsysconfdir,
++  exclude_files: [ 'README.txt' ],
++)
++
+ # Bash completion
+ bash = find_program('bash', required : get_option('bash-completion'))
+ bash_completion = dependency('bash-completion', version: '>=2.0', required: get_option('bash-completion'))
+diff --git a/etc/shortcutsrc b/etc/shortcutsrc
+new file mode 100644
+index 0000000..66da19e
+--- /dev/null
++++ b/etc/shortcutsrc
+@@ -0,0 +1,6 @@
++# Default keyboard shortcuts of this build (used while the user has no personal shortcutsrc).
++# Empty here = upstream GIMP shortcuts; the product branding fills it in.
++
++(file-version 1)
++
++# end of shortcutsrc
