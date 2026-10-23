@@ -32,12 +32,11 @@ dist/                             (gitignored) built packages copied back from t
 ## Build machines
 
 Any Windows 10/11 x64 box, admin **not** required. Everything goes under one root directory (`-Root`,
-default `C:\olga-build`; on A it is `F:\olga-build`) plus two small per-user folders the smoke test creates
+default `C:\olga-build`) plus two small per-user folders the smoke test creates
 (`%APPDATA%\<id>`, `%LOCALAPPDATA%\<id>`). Needs ~25 GB free and internet access to gitlab.com and 7-zip.org.
 
-Copy the repo to `<root>\olga-creative` (it has no remote; e.g. from B:
-`tar cf - brand.json branding windows tools | ssh <box> "cd /d <root>\olga-creative && rmdir /s /q branding windows tools & tar xf -"`;
-remove the old folders first so a renamed or deleted patch does not linger), then:
+Clone or copy this repo to `<root>\olga-creative` (when copying over an older copy, remove the old
+`branding`, `windows` and `tools` folders first so a renamed or deleted patch does not linger), then:
 
 ```powershell
 # on the build box (or through ssh), detached so a dropped ssh session does not kill it:
@@ -47,18 +46,18 @@ powershell -Command "Get-Content (Get-Content <root>\logs\inkscape-latest.txt) -
 ```
 
 `run-detached.ps1` starts the job through WMI (survives the ssh session; needs WMI access, i.e. admin over
-ssh). If that is refused (non-admin, e.g. A) it falls back to a one-shot scheduled task `OlgaBuild-<name>`
+ssh). If that is refused (non-admin account) it falls back to a one-shot scheduled task `OlgaBuild-<name>`
 for the current user, and as a last resort to `Start-Process`. While the job runs it holds
 `SetThreadExecutionState(ES_CONTINUOUS|ES_SYSTEM_REQUIRED)`, so idle sleep does not interrupt it; power
 settings are not changed. Only one copy per name runs at a time (`<root>\logs\<name>.pid`).
 
 ### The build must never disturb the person using the machine
 
-The build boxes are people's computers (the owner's laptop is in daily use). Therefore:
+A build box may be someone's everyday computer. Therefore:
 
 - Every step runs at **Idle CPU priority**: `run-detached.ps1` starts the job at Idle on every launch path,
   and `common.ps1` drops any script that loads it to Idle, so bash, ninja, gcc, curl and 7zr inherit it.
-- Default parallelism is **CPU threads minus 2** (`ninja -j6` on the 8-thread laptop); `-ScriptArgs '-Jobs 4'`
+- Default parallelism is **CPU threads minus 2** (`ninja -j6` on an 8-thread CPU); `-ScriptArgs '-Jobs 4'`
   to go lower.
 - No system changes: no Defender exclusion, no power-plan change, no services. Windows Defender will still
   scan the build output (it costs CPU we cannot lower); if the user notices, stop the job (`Stop-Process` the
@@ -68,7 +67,7 @@ The build boxes are people's computers (the owner's laptop is in daily use). The
 Extra build options go through `-ScriptArgs`, e.g. `-ScriptArgs '-Clean'` (full recompile) or
 `-ScriptArgs '-NoInstaller'`.
 
-### Resuming (laptop closed, network changed, ssh dropped)
+### Resuming (machine asleep, network changed, ssh dropped)
 
 Just run the same command again. Each step skips what is already done:
 
@@ -91,8 +90,7 @@ ccache (`<root>\ccache`) makes recompiles after a brand change cheap.
 - `<root>\smoke\` - `version.txt`, `dirs.txt`, `cjk.pdf`, `cjk.png`, `result.json`.
 - Logs: `<root>\logs\<name>-<timestamp>.log`.
 
-Copy back to B: `scp laptop:C:/olga-build/dist/*.zip dist/` then
-`python -I tools\check-pdf-text.py <copied cjk.pdf>`.
+To check the smoke-test PDF for live text: `python -I tools\check-pdf-text.py <root>\smoke\cjk.pdf`.
 
 ## Renaming the brand
 
