@@ -23,6 +23,9 @@ branding/gimp/patches/            GIMP source patches (brand-neutral: meson opti
 branding/gimp/apply-branding.py   GIMP data-level branding: defaults, zh_TW/en strings, logos/icons, splash, installer art
 branding/gimp/defaults/           Photoshop-style default shortcuts/layout/toolbox/tool options/templates (mostly PhotoGIMP, GPL-3.0)
 branding/gimp/zh_TW-terms.csv     zh_TW wording table (GIMP's term -> the term Photoshop users know), applied at build time
+branding/gimp/zh_TW-term-words.csv  word rules that carry those approved terms into the other text domains
+branding/gimp/zh_TW-translations.csv  zh_TW texts upstream lacks (JPEG export dialog, Wavelet Decompose, GEGL Filter Browser)
+branding/gimp/guide-zh_TW.html    customer guide (Traditional Chinese), installed as GUIDE-zh_TW.html
 branding/gimp/resynthesizer-zh_TW.po  zh_TW catalog for the bundled Resynthesizer plug-ins (their gettext domain)
 branding/gimp/resynthesizer-i18n.py   checks that catalog against the installed plug-ins, compiles and installs it
 branding/gimp/deps/               the exiv2 patch upstream GIMP CI applies
@@ -34,7 +37,10 @@ windows/build-gimp.ps1            tarballs -> babl/GEGL/exiv2 -> brand -> meson/
 windows/package-gimp-installer.ps1  Inno Setup installer (Inno unpacked per-user under the build root)
 windows/smoke-test-gimp.ps1       headless: --version (en/zh_TW), Python batch PNG -> PNG/JPG, Heal Selection, profile seeding,
                                   catalogs + zh_TW terms + msgfmt --check, default shortcuts, mascot artwork gone,
-                                  Resynthesizer labels in zh_TW and English
+                                  Resynthesizer labels in zh_TW and English, no parse error in any settings file
+                                  (console run + a desktop-less GUI batch run), every product gimprc value really
+                                  used, default comment, product keys / wheel / tool / style defaults, the other
+                                  text domains, the customer guide
 windows/run-detached.ps1          start a build detached from ssh, with keep-awake and a log file
 windows/keepawake-run.ps1         (internal) keep-awake wrapper used by run-detached.ps1
 windows/cleanup.ps1               remove everything the pipeline created on a build machine
@@ -174,7 +180,8 @@ so `ninja install` runs upstream's bundling script, then Inno Setup. Upstream CI
 Outputs: `<root>\dist\<id>-<version>-win64-portable.zip` (unzip anywhere, run `<id>\<id>.cmd` or
 `<id>\bin\<id>.exe`; debug symbols left out) and `<root>\dist\<id>-<version>-setup.exe` (Inno Setup, per-user
 install by default, admin install offered), plus `<root>\dist\<id>-<version>-zh_TW-terms-review.md`, the
-before/after sheet of the zh_TW wording (and the Resynthesizer terms) for staff review.
+before/after sheet of the zh_TW wording (and the Resynthesizer terms) for staff review, and
+`<root>\dist\<id>-<version>-guide-zh_TW.html`, the customer guide that also ships in the packages.
 
 Source patches (`branding/gimp/patches`, all brand-neutral; the values come from meson `-Dolga-brand-*`):
 
@@ -196,6 +203,14 @@ Source patches (`branding/gimp/patches`, all brand-neutral; the values come from
    undo step each. Bound to Ctrl+G / Ctrl+Shift+G by the default shortcuts (Ctrl+G was the Gradients dialog).
 7. `0007` the empty canvas (and the optional toolbox artwork) draws a plain brand-neutral mark instead of
    GIMP's mascot.
+8. `0008` the welcome dialog follows `show-welcome-dialog` (product default: off) also on the first start of a new
+   profile or version (upstream shows it then regardless).
+9. `0009` Windows: the image window and docks detach their input method (IME) while the focus is not on a text
+   entry, a text view or the text tool's on-canvas editing, so single-key shortcuts work with e.g. Bopomofo in
+   Chinese mode; the user's input mode is kept, dialogs are unchanged.
+10. `0010` Alt-click sets the clone / heal source and Alt picks colors while painting (Ctrl keeps working; the
+    eraser keeps Alt for anti-erase).
+11. `0011` installer: the customer guide `GUIDE-zh_TW.html` at the install root, with a Start menu entry.
 
 Build options (not patches): own profile folder `%APPDATA%\<nameAscii>\3.2` (`-Dgimpdir`, upstream option, so an
 installed GIMP's settings never override ours and the two never share settings), `-Dcheck-update=no` (no "new
@@ -213,6 +228,12 @@ splash/banner bitmaps. The zh_TW wording table `branding/gimp/zh_TW-terms.csv` (
 current wording, new wording, why) is applied to `po/zh_TW.po` after the brand rename: a row whose current
 wording no longer matches upstream, a missing or extra menu mnemonic, or changed format specifiers stop the
 build, and the catalog must pass `msgfmt --check`. Edit the table and rebuild to change the wording.
+On the finished bundle the same terms reach the other text domains (libgimp's shared buttons such as Help /
+Export, the plug-ins' dialogs, Script-Fu, Python, GEGL's filter names): the decompiled catalogs get the table rows
+(GIMP's domains), the word rules of `zh_TW-term-words.csv` (each must belong to an approved term and use its new
+word) and the missing translations of `zh_TW-translations.csv`, and are compiled again; a rule that no longer
+changes anything or a translation upstream now has stops the build. GLib's own catalogs (file errors) are added
+to the bundle. The staff review sheet lists every change.
 
 Bundled plug-in: **Resynthesizer** (GPL-3.0, <https://github.com/bootchk/resynthesizer>, the GIMP 3 line,
 tag pinned with SHA-256 in `build-gimp.ps1`): Filters > Enhance > Heal Selection (content-aware fill),
