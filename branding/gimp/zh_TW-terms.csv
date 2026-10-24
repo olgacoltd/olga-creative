@@ -94,3 +94,59 @@ Pen Tool,,Paths Tool: Create and edit paths,路徑工具：建立和編輯路徑
 Trim,image-action,Crop to C_ontent,裁切到只剩內容(_O),修剪(_O),Image > Trim (cut away empty borders) is commonly 修剪
 Flip Canvas Horizontal,image-action,Flip _Horizontally,水平翻轉(_H),水平翻轉版面(_H),"Image > Image Rotation > Flip Canvas Horizontal is 水平翻轉版面; distinguishes it from flipping a layer"
 Flip Canvas Vertical,image-action,Flip _Vertically,垂直翻轉(_V),垂直翻轉版面(_V),"Image > Image Rotation > Flip Canvas Vertical is 垂直翻轉版面"
+Blend modes,layer-mode,Normal,一般,正常,blend mode name of the common editors (Layers panel and paint tool Mode list)
+Blend modes,layer-mode,Normal (legacy),一般（舊式）,正常（舊式）,legacy variant of the same mode
+Blend modes,layer-mode,Normal (l),一般（舊）,正常（舊）,legacy variant of the same mode (short label)
+Blend modes,layer-mode,Multiply,相乘,色彩增值,blend mode name of the common editors (Layers panel and paint tool Mode list)
+Blend modes,layer-mode,Multiply (legacy),相乘（舊式）,色彩增值（舊式）,legacy variant of the same mode
+Blend modes,layer-mode,Multiply (l),相乘（舊）,色彩增值（舊）,legacy variant of the same mode (short label)
+Blend modes,layer-mode,Difference,差異值,差異化,blend mode name of the common editors (Layers panel and paint tool Mode list)
+Blend modes,layer-mode,Difference (legacy),差異值（舊式）,差異化（舊式）,legacy variant of the same mode
+Blend modes,layer-mode,Difference (l),差異值（舊）,差異化（舊）,legacy variant of the same mode (short label)
+Blend modes,layer-mode,Addition,相加,線性加亮（增加）,blend mode name of the common editors (Layers panel and paint tool Mode list)
+Blend modes,layer-mode,Addition (legacy),相加（舊式）,線性加亮（增加）（舊式）,legacy variant of the same mode
+Blend modes,layer-mode,Addition (l),相加（舊）,線性加亮（增加）（舊）,legacy variant of the same mode (short label)
+Blend modes,layer-mode,Darken only,僅變暗,變暗,blend mode name of the common editors (Layers panel and paint tool Mode list)
+Blend modes,layer-mode,Darken only (legacy),僅變暗（舊式）,變暗（舊式）,legacy variant of the same mode
+Blend modes,layer-mode,Darken only (l),僅變暗（舊）,變暗（舊）,legacy variant of the same mode (short label)
+Blend modes,layer-mode,Lighten only,僅變亮,變亮,blend mode name of the common editors (Layers panel and paint tool Mode list)
+Blend modes,layer-mode,Lighten only (legacy),僅變亮（舊式）,變亮（舊式）,legacy variant of the same mode
+Blend modes,layer-mode,Lighten only (l),僅變亮（舊）,變亮（舊）,legacy variant of the same mode (short label)
+Blend modes,layer-mode,HSV Hue,HSV 色相,色相,blend mode name of the common editors (Layers panel and paint tool Mode list)
+Blend modes,layer-mode,HSV Hue (legacy),HSV 色相（舊式）,色相（舊式）,legacy variant of the same mode
+Blend modes,layer-mode,HSV Hue (l),HSV 色相（舊）,色相（舊）,legacy variant of the same mode (short label)
+Blend modes,layer-mode,HSV Saturation,HSV 飽和度,飽和度,blend mode name of the common editors (Layers panel and paint tool Mode list)
+Blend modes,layer-mode,HSV Saturation (legacy),HSV 飽和度（舊式）,飽和度（舊式）,legacy variant of the same mode
+Blend modes,layer-mode,HSV Saturation (l),HSV 飽和度（舊）,飽和度（舊）,legacy variant of the same mode (short label)
+Blend modes,layer-mode,HSL Color,HSL 顏色,顏色,blend mode name of the common editors (Layers panel and paint tool Mode list)
+Blend modes,layer-mode,HSL Color (legacy),HSL 顏色（舊式）,顏色（舊式）,legacy variant of the same mode
+Blend modes,layer-mode,HSL Color (l),HSL 顏色（舊）,顏色（舊）,legacy variant of the same mode (short label)
+Blend modes,layer-mode,Divide,除以,分割,blend mode name of the common editors (Layers panel and paint tool Mode list)
+Blend modes,layer-mode,Divide (legacy),除以（舊式）,分割（舊式）,legacy variant of the same mode
+Blend modes,layer-mode,Divide (l),除以（舊）,分割（舊）,legacy variant of the same mode (short label)
+Blend modes,layer-mode,Dodge,遮亮顏色,加亮顏色,blend mode name of the common editors (Layers panel and paint tool Mode list)
+Blend modes,layer-mode,Dodge (legacy),遮亮顏色（舊式）,加亮顏色（舊式）,legacy variant of the same mode
+Blend modes,layer-mode,Dodge (l),遮亮顏色（舊）,加亮顏色（舊）,legacy variant of the same mode (short label)
+Blend modes,layer-mode,Burn,曝深顏色,加深顏色,blend mode name of the common editors (Layers panel and paint tool Mode list)
+Blend modes,layer-mode,Burn (legacy),曝深顏色（舊式）,加深顏色（舊式）,legacy variant of the same mode
+Blend modes,layer-mode,Burn (l),曝深顏色（舊）,加深顏色（舊）,legacy variant of the same mode (short label)
+Blend modes,layer-mode,Behind,下置,背後,blend mode name of the common editors (Layers panel and paint tool Mode list)
+Blend modes,layer-mode,Behind (legacy),下置（舊式）,背後（舊式）,legacy variant of the same mode
+Blend modes,layer-mode,Behind (l),下置（舊）,背後（舊）,legacy variant of the same mode (short label)
+Blend modes,layer-mode,Overlay,覆疊,覆蓋,blend mode name of the common editors (Layers panel and paint tool Mode list)
+Blend modes,layer-mode,Old Overlay,舊式覆疊,舊式覆蓋,legacy variant of Overlay
+Blend modes,layer-mode,Old broken Overlay,舊式壞的覆疊,舊式壞的覆蓋,legacy variant of Overlay
+Blend modes,layer-mode,Linear burn,線性曝深,線性加深,blend mode name of the common editors (Layers panel and paint tool Mode list)
+Blend modes,layer-mode,Hard mix,實色疊加混合,實色疊印混合,blend mode name of the common editors (Layers panel and paint tool Mode list)
+Blend modes,layer-mode,Luma darken only,視亮度僅變暗,顏色變暗,blend mode name of the common editors (Layers panel and paint tool Mode list) (darken by brightness)
+Blend modes,layer-mode,Luma/Luminance darken only,視亮度/輝度僅變暗,顏色變暗,"same mode, label used in linear-light lists"
+Blend modes,layer-mode,Luma lighten only,視亮度僅變亮,顏色變亮,blend mode name of the common editors (Layers panel and paint tool Mode list) (lighten by brightness)
+Blend modes,layer-mode,Luma/Luminance lighten only,視亮度/輝度僅變亮,顏色變亮,"same mode, label used in linear-light lists"
+Blend modes,layer-mode,Luminance,輝度,明度,blend mode name of the common editors (Layers panel and paint tool Mode list); HSV Value keeps HSV 明度 so the list has no duplicate
+Blend modes,layer-mode,Split,分割,拆分,"Divide is now 分割 (the common name), so Split needs another word"
+Close warning,,Save _As,另存新檔(_A),另存專案檔(_A),close-after-export warning (and nothing else): it saves the layered project file
+Close warning,,_Discard Changes,捨棄更動(_D),不存專案檔(_D),close-after-export warning and the quit dialog: the exported JPG/PNG is kept either way
+Close warning,,The image has been exported to '%s'.,影像已匯出到「%s」。,已轉存到「%s」；圖層只會保存在專案檔(.xcf)。,close warning: says why it still asks after an export
+Copy name,,%s copy,%s 副本,%s 拷貝,name of a duplicated layer: 背景 拷貝
+Copy name,,copy,副本,拷貝,must match %s copy (no second 拷貝 when duplicating a copy)
+Group name,,Layer Group,圖層群組,群組 #1,"name of a new layer group; the next ones are numbered 群組 #2, 群組 #3 ..."

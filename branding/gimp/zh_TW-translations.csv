@@ -1,0 +1,56 @@
+domain,context,msgid,zh_TW,where
+gimp30-std-plug-ins,,Loads files in the JPEG file format,載入 JPEG 檔案格式的檔案,JPEG: procedure description
+gimp30-std-plug-ins,,Loads a thumbnail from a JPEG image,從 JPEG 影像載入縮圖,JPEG: procedure description
+gimp30-std-plug-ins,,"Loads a thumbnail from a JPEG image, if one exists",從 JPEG 影像載入縮圖（如果有的話）,JPEG: procedure description
+gimp30-std-plug-ins,,Exports files in the JPEG file format,以 JPEG 檔案格式轉存檔案,JPEG: procedure description
+gimp30-std-plug-ins,,"Exports files in the lossy, widely supported JPEG format",以失真壓縮、支援廣泛的 JPEG 格式轉存檔案,JPEG: procedure description
+gimp30-std-plug-ins,,Quality of exported image,轉存影像的品質,JPEG export dialog: tooltip
+gimp30-std-plug-ins,,S_moothing,平滑化(_M),JPEG export dialog
+gimp30-std-plug-ins,,Smoothing factor for exported image,轉存影像的平滑化程度,JPEG export dialog: tooltip
+gimp30-std-plug-ins,,Optimi_ze,最佳化(_Z),JPEG export dialog
+gimp30-std-plug-ins,,Use optimized tables during Huffman coding,Huffman 編碼時使用最佳化的表格,JPEG export dialog: tooltip
+gimp30-std-plug-ins,,Create progressive JPEG images,建立漸進式 JPEG 影像,JPEG export dialog: tooltip
+gimp30-std-plug-ins,,Export as CM_YK,轉存為 CMYK(_Y),JPEG export dialog
+gimp30-std-plug-ins,,Create a CMYK JPEG image using the soft-proofing color profile,使用軟校樣色彩描述檔建立 CMYK JPEG 影像,JPEG export dialog: tooltip
+gimp30-std-plug-ins,,Su_bsampling,次取樣(_B),JPEG export dialog
+gimp30-std-plug-ins,,Sub-sampling type,次取樣類型,JPEG export dialog: tooltip
+gimp30-std-plug-ins,,4:2:2 (chroma halved horizontally),4:2:2（彩度水平減半）,JPEG export dialog: Subsampling choice
+gimp30-std-plug-ins,,4:4:0 (chroma halved vertically),4:4:0（彩度垂直減半）,JPEG export dialog: Subsampling choice
+gimp30-std-plug-ins,,Baseline,基線,JPEG export dialog
+gimp30-std-plug-ins,,Force creation of a baseline JPEG (non-baseline JPEGs can't be read by all decoders),強制建立基線 JPEG（不是所有解碼器都能讀取非基線 JPEG）,JPEG export dialog: tooltip
+gimp30-std-plug-ins,,Inter_val (MCU rows):,間隔（MCU 列）(_V)：,JPEG export dialog
+gimp30-std-plug-ins,,"Interval of restart markers (in MCU rows, 0 = no restart markers)",重新啟動標記的間隔（以 MCU 列為單位，0 = 不使用重新啟動標記）,JPEG export dialog: tooltip
+gimp30-std-plug-ins,,_DCT method,DCT 方法(_D),JPEG export dialog
+gimp30-std-plug-ins,,DCT method to use,要使用的 DCT 方法,JPEG export dialog: tooltip
+gimp30-std-plug-ins,,Creates a temporary layer with an export preview,建立暫時圖層來預覽轉存結果,JPEG export dialog: tooltip
+gimp30-std-plug-ins,,Use _arithmetic coding,使用算術編碼(_A),JPEG export dialog
+gimp30-std-plug-ins,,Use restart mar_kers,使用重新啟動標記(_K),JPEG export dialog
+gimp30-std-plug-ins,,File size without metadata: %s,檔案大小（不含中介資料）：%s,JPEG export dialog
+gimp30-std-plug-ins,,Calculating approximate file size...,正在計算大約的檔案大小...,JPEG export dialog
+gimp30-std-plug-ins,,File size without metadata: unknown,檔案大小（不含中介資料）：不明,JPEG export dialog
+gimp30-std-plug-ins,,Enable preview to obtain the approximate file size.,啟用預覽即可得知大約的檔案大小。,JPEG export dialog: tooltip
+gimp30-std-plug-ins,,No soft-proofing profile,沒有軟校樣描述檔,JPEG export dialog
+gimp30-std-plug-ins,,Name of the color profile used for CMYK export.,CMYK 轉存所使用的色彩描述檔名稱。,JPEG export dialog: tooltip
+gimp30-std-plug-ins,,Profile: %s,描述檔：%s,JPEG export dialog
+gimp30-std-plug-ins,,_Wavelet Decompose...,小波分解(_W)...,Filters > Enhance
+gimp30-std-plug-ins,,Wavelet Decompose,小波分解,Wavelet Decompose: dialog title and progress
+gimp30-std-plug-ins,,Scal_es,尺度數(_E),Wavelet Decompose dialog
+gimp30-std-plug-ins,,Number of scales,尺度的數目,Wavelet Decompose dialog: tooltip
+gimp30-std-plug-ins,,Create a layer group to store the _decomposition,建立圖層群組來存放分解結果(_D),Wavelet Decompose dialog
+gimp30-std-plug-ins,,_Add a layer mask to each scales layer,為每個尺度圖層增加圖層遮色片(_A),Wavelet Decompose dialog
+gimp30-std-plug-ins,,Add a layer mask to each scales layer,為每個尺度圖層增加圖層遮色片,Wavelet Decompose dialog: tooltip
+gimp30-std-plug-ins,,Procedure '%s' only works with one drawable.,程序「%s」一次只能處理一個圖層。,message of several plug-ins
+gimp30-std-plug-ins,,_GEGL Filter Browser,GEGL 濾鏡瀏覽器(_G),Help > Programming menu
+gimp30-std-plug-ins,,GEGL Filter Browser,GEGL 濾鏡瀏覽器,GEGL Filter Browser: window title
+gimp30-std-plug-ins,,"Display information about available GEGL operations (i.e., filters).",顯示可用 GEGL 操作（也就是濾鏡）的資訊。,GEGL Filter Browser: tooltip
+gimp30-std-plug-ins,,Allowed values:,允許的值：,GEGL Filter Browser
+gimp30-std-plug-ins,,Operation name: %s,操作名稱：%s,GEGL Filter Browser
+gimp30-std-plug-ins,,Categories: %s,類別：%s,GEGL Filter Browser
+gimp30-std-plug-ins,,Additional Information,其他資訊,GEGL Filter Browser
+gimp30-std-plug-ins,,License: %s,授權條款：%s,GEGL Filter Browser
+gimp30-std-plug-ins,,Searching by title,依標題搜尋,GEGL Filter Browser
+gimp30-std-plug-ins,,Searching by description,依描述搜尋,GEGL Filter Browser
+gimp30-std-plug-ins,,Searching by category,依類別搜尋,GEGL Filter Browser
+gimp30-std-plug-ins,,by name,依名稱,GEGL Filter Browser: search choice
+gimp30-std-plug-ins,,by title,依標題,GEGL Filter Browser: search choice
+gimp30-std-plug-ins,,by description,依描述,GEGL Filter Browser: search choice

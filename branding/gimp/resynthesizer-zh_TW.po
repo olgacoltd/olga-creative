@@ -18,9 +18,9 @@ msgstr ""
 msgid "You must first select a region to heal."
 msgstr "請先選取要修復的區域。"
 
-#. 選單項目 Filters > Enhance;對應常見修圖軟體的「內容感知」修復
+#. 選單項目 Filters > Enhance;對應常見修圖軟體的「內容感知」修復。快速鍵字母用 C(H 已是同一選單的「高通濾波」)
 msgid "_Heal Selection..."
-msgstr "修復選取範圍（內容感知）(_H)..."
+msgstr "修復選取範圍（內容感知）(_C)..."
 
 #. 選單提示
 msgid "Heal the selection from surroundings as if using the heal tool."

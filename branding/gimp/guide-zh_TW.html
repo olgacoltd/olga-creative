@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>在 @NAME@ 怎麼做</title>
+<style>
+  body { font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif; line-height: 1.7; margin: 0; color: #1d2430; background: #f6f7f9; }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 1.7em; margin: 0.2em 0 0.1em; }
+  h2 { font-size: 1.25em; margin-top: 1.8em; padding-bottom: 4px; border-bottom: 2px solid @ACCENT@; }
+  p.lead { color: #4a5568; margin-top: 0; }
+  table { border-collapse: collapse; width: 100%; background: #fff; }
+  th, td { border: 1px solid #d5dbe3; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #e9edf2; }
+  kbd { font-family: Consolas, monospace; background: #fff; border: 1px solid #b8c0cc; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; white-space: nowrap; }
+  .menu { background: #e9edf2; border-radius: 4px; padding: 0 5px; white-space: nowrap; }
+  .tip { background: #fff8e6; border-left: 4px solid @ACCENT@; padding: 8px 12px; margin: 12px 0; }
+  footer { margin-top: 40px; color: #6b7480; font-size: 0.9em; }
+</style>
+</head>
+<body>
+<main>
+<h1>在 @NAME@ 怎麼做</h1>
+<p class="lead">給從其他修圖軟體換過來的人:大部分的快捷鍵和做法都一樣,這份說明列出常用的對照,以及做法不一樣的地方。</p>
+
+<h2>1. 快捷鍵和輸入法</h2>
+<p>在畫布上按單一字母(例如 <kbd>V</kbd>、<kbd>B</kbd>、<kbd>[</kbd>)切換工具或調整筆刷時,即使注音輸入法是「中」模式也會直接生效:畫布上不會打出注音。在圖層名稱、文字工具、對話方塊的欄位裡打字時,輸入法照常可以打中文。</p>
+<div class="tip">如果單鍵快捷鍵還是沒反應(例如焦點停在其他視窗,或使用其他輸入法):先點一下畫布,或按 <kbd>Shift</kbd> 切到英文、或點工作列的「中/英」再試。<kbd>Ctrl</kbd> / <kbd>Alt</kbd> 組合鍵不受輸入法影響。</div>
+
+<h2>2. 常用快捷鍵</h2>
+<table>
+<tr><th>做什麼</th><th>按鍵</th></tr>
+<tr><td>移動、矩形 / 橢圓選取畫面、套索、魔術棒</td><td><kbd>V</kbd> <kbd>M</kbd> / <kbd>Shift</kbd>+<kbd>M</kbd> <kbd>L</kbd> <kbd>W</kbd></td></tr>
+<tr><td>裁切、任意變形</td><td><kbd>C</kbd>、<kbd>Ctrl</kbd>+<kbd>T</kbd>(按 <kbd>Enter</kbd> 套用)</td></tr>
+<tr><td>筆刷、橡皮擦、仿製印章、修復筆刷、文字、滴管</td><td><kbd>B</kbd> <kbd>E</kbd> <kbd>S</kbd> <kbd>J</kbd> <kbd>T</kbd> <kbd>I</kbd></td></tr>
+<tr><td>筆刷大小(每次 10 像素)</td><td><kbd>[</kbd> <kbd>]</kbd></td></tr>
+<tr><td>預設前景 / 背景色、交換</td><td><kbd>D</kbd>、<kbd>X</kbd></td></tr>
+<tr><td>填滿前景色 / 背景色</td><td><kbd>Alt</kbd>+<kbd>Backspace</kbd> / <kbd>Ctrl</kbd>+<kbd>Backspace</kbd></td></tr>
+<tr><td>內容感知填色(修復選取範圍)</td><td><kbd>Shift</kbd>+<kbd>F5</kbd> 或 <kbd>Shift</kbd>+<kbd>Backspace</kbd></td></tr>
+<tr><td>色階、曲線、色相/飽和度、色彩平衡</td><td><kbd>Ctrl</kbd>+<kbd>L</kbd> <kbd>Ctrl</kbd>+<kbd>M</kbd> <kbd>Ctrl</kbd>+<kbd>U</kbd> <kbd>Ctrl</kbd>+<kbd>B</kbd></td></tr>
+<tr><td>新增圖層、新增圖層(不跳對話框)、複製圖層</td><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd>、<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd>、<kbd>Ctrl</kbd>+<kbd>J</kbd></td></tr>
+<tr><td>向下合併、合併可見圖層、蓋印可見圖層到新圖層</td><td><kbd>Ctrl</kbd>+<kbd>E</kbd>、<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd>、<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd></td></tr>
+<tr><td>群組圖層 / 解散群組</td><td><kbd>Ctrl</kbd>+<kbd>G</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd></td></tr>
+<tr><td>全選、取消選取、反轉選取</td><td><kbd>Ctrl</kbd>+<kbd>A</kbd>、<kbd>Ctrl</kbd>+<kbd>D</kbd>、<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd></td></tr>
+<tr><td>就地貼上</td><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd></td></tr>
+<tr><td>還原、重做</td><td><kbd>Ctrl</kbd>+<kbd>Z</kbd>、<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></td></tr>
+<tr><td>顯示全頁、100%、放大 / 縮小</td><td><kbd>Ctrl</kbd>+<kbd>0</kbd>、<kbd>Ctrl</kbd>+<kbd>1</kbd>、<kbd>Ctrl</kbd>+<kbd>+</kbd> / <kbd>Ctrl</kbd>+<kbd>-</kbd>、<kbd>Alt</kbd>+滑鼠滾輪</td></tr>
+<tr><td>影像尺寸、版面尺寸</td><td><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>I</kbd>、<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>C</kbd></td></tr>
+<tr><td>尺標、參考線、格點</td><td><kbd>Ctrl</kbd>+<kbd>R</kbd>、<kbd>Ctrl</kbd>+<kbd>;</kbd>、<kbd>Ctrl</kbd>+<kbd>'</kbd></td></tr>
+<tr><td>偏好設定、鍵盤快捷鍵、列印</td><td><kbd>Ctrl</kbd>+<kbd>K</kbd>、<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>K</kbd>、<kbd>Ctrl</kbd>+<kbd>P</kbd></td></tr>
+<tr><td>液化(彎曲變形工具)</td><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd></td></tr>
+</table>
+<p>所有快捷鍵都可以在 <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>K</kbd>(鍵盤快捷鍵)裡查詢和修改。找不到某個功能時,按 <kbd>/</kbd> 用關鍵字搜尋指令。</p>
+
+<h2>3. 存檔:專案檔和轉存</h2>
+<ul>
+<li><kbd>Ctrl</kbd>+<kbd>S</kbd> 儲存的是<strong>專案檔(.xcf)</strong>:保留所有圖層、文字、遮色片,之後還能繼續修改。</li>
+<li>要給別人或上傳的 JPG / PNG,用 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>(轉存為),或 <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>。JPG / PNG 只有一層,圖層不會保存在裡面。</li>
+<li>轉存完關閉時仍會詢問是否存專案檔:要保留圖層就按「另存專案檔」,只要那張 JPG / PNG 就按「不存專案檔」,已轉存的檔案不受影響。</li>
+</ul>
+
+<h2>4. 內容感知填色</h2>
+<p>用選取工具圈住要去除的東西,按 <kbd>Shift</kbd>+<kbd>F5</kbd>(或 <span class="menu">濾鏡 &gt; 增強 &gt; 修復選取範圍(內容感知)</span>)。</p>
+<ul>
+<li>選取範圍稍微放大一點(<span class="menu">選取 &gt; 擴張</span> 幾個像素),邊緣比較自然。</li>
+<li>周圍很單調、或修補出現條紋時,把「周圍取樣寬度」調大再試一次;大面積的修補可以分幾次做。</li>
+<li>細部再用修復筆刷(<kbd>J</kbd>)或仿製印章(<kbd>S</kbd>)整理:按住 <kbd>Alt</kbd> 點一下設定取樣來源,再塗抹。</li>
+<li>它是依照片周圍的內容合成,不是 AI 產生內容,複雜的背景效果會比較有限。</li>
+</ul>
+
+<h2>5. 開啟和儲存的檔案視窗</h2>
+<p>開啟、儲存的視窗和 Windows 檔案總管不一樣:</p>
+<ul>
+<li>直接打字就能輸入路徑或檔名(例如 <code>D:\照片</code>),左側可以把常用資料夾拖進去當書籤。</li>
+<li>從檔案總管把圖片直接拖到 @NAME@ 視窗上就能開啟;拖到已開啟的影像上會成為新圖層。</li>
+<li><span class="menu">檔案 &gt; 開啟最近</span> 可以找到最近用過的檔案。</li>
+</ul>
+
+<h2>6. 沒有對應工具時的做法</h2>
+<table>
+<tr><th>想做的事</th><th>在 @NAME@ 這樣做</th></tr>
+<tr><td>畫形狀(矩形、圓形)</td><td>用矩形 / 橢圓選取畫面圈出形狀,按 <kbd>Alt</kbd>+<kbd>Backspace</kbd> 填滿前景色;只要外框就用 <span class="menu">編輯 &gt; 沿選取範圍描邊</span>。曲線形狀用筆型工具(<kbd>P</kbd>)畫路徑,再用 <span class="menu">編輯 &gt; 沿路徑畫線</span>,或把路徑轉成選取範圍後填色。</td></tr>
+<tr><td>抓手(移動畫面)</td><td>按住 <kbd>空白鍵</kbd> 拖曳;或用滑鼠中鍵拖曳。</td></tr>
+<tr><td>旋轉檢視</td><td>按住 <kbd>Shift</kbd> 用滑鼠中鍵拖曳;或 <span class="menu">檢視 &gt; 翻轉與旋轉</span>。只轉畫面,不會改到影像。</td></tr>
+<tr><td>去背、選取主體</td><td>沒有一鍵選取主體。可用前景選取工具(<span class="menu">工具 &gt; 選取工具 &gt; 前景選取</span>)大致畫出主體;邊界清楚的用魔術棒(<kbd>W</kbd>);要精準就用筆型工具(<kbd>P</kbd>)描邊,再轉成選取範圍。按 <kbd>Q</kbd> 可用快速遮罩以筆刷修選取範圍。去背後建議加圖層遮色片,不要直接刪除。</td></tr>
+<tr><td>陰影</td><td><span class="menu">濾鏡 &gt; 光影 &gt; 下方陰影</span>(文字或去背後的圖層都可以用)。</td></tr>
+<tr><td>描邊(外框線)</td><td>在圖層面板的圖層上按右鍵 &gt; <span class="menu">Alpha 轉為選取範圍</span> → <span class="menu">選取 &gt; 擴張</span> 幾個像素 → 新增一個圖層放在下面 → 填滿顏色。</td></tr>
+<tr><td>調整圖層</td><td>沒有調整圖層。色階、曲線、色相/飽和度等濾鏡套用後會留在圖層上(圖層面板的 fx 圖示),之後可以再打開修改、暫時隱藏或刪除,不會破壞原圖;對話框裡勾選「合併濾鏡」才會直接寫進圖層。</td></tr>
+<tr><td>圖層樣式</td><td>沒有圖層樣式視窗。陰影、描邊用上面的做法;發光等效果在 <span class="menu">濾鏡 &gt; 光影</span>。</td></tr>
+</table>
+
+<h2>7. 沒有的功能</h2>
+<p>一鍵選取主體 / 天空、AI 生成填色、AI 濾鏡、相機 RAW 專用編修視窗,本軟體都沒有。需要時請改用上面的替代做法。</p>
+
+<footer>@NAME@ 以 GIMP(GPL 授權)為基礎。授權與來源說明見安裝資料夾中的 NOTICE.txt。</footer>
+</main>
+</body>
+</html>

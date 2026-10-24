@@ -16,9 +16,12 @@ usage:
         4. mascot     every upstream mascot picture (icon themes, error icon, splash easter egg, brush)
                       replaced by the product artwork (the empty-canvas drawing is source patch 0007)
   python apply-branding.py bundle <bundle dir> <brand.json> <meson build dir>
-      run on the finished bundle: splash screen, and the installer's splash/banner bitmaps that upstream
-      renders from its own splash artwork during the build.
-Needs Pillow. Fonts come from brand.json (Windows font paths).
+      run on the finished bundle: splash screen (its bottom band kept free for the start-up progress text),
+      the installer's splash/banner bitmaps that upstream renders from its own splash artwork during the
+      build, GLib's catalogs, and 5. the zh_TW terms in the other text domains (libgimp, plug-ins, Script-Fu,
+      Python, GEGL) plus the translations upstream lacks (zh_TW-term-words.csv, zh_TW-translations.csv);
+      review section <meson build dir>/olga-zh_TW-catalogs-review.md
+Needs Pillow, and msgfmt / msgunfmt on PATH. Fonts come from brand.json (Windows font paths).
 """
 import base64
 import csv
@@ -56,8 +59,25 @@ def brand_defaults():
     d = os.path.join(HERE, 'defaults')
     for fn in ('shortcutsrc', 'sessionrc', 'toolrc'):
         shutil.copyfile(os.path.join(d, fn), p('etc', fn))
+    comment = G.get('defaultComment', '')
     with open(p('etc', 'gimprc.in'), 'a', encoding='utf-8', newline='\n') as f:
         f.write(open(os.path.join(d, 'gimprc'), encoding='utf-8').read())
+        # the comment new images carry and export dialogs offer (upstream: "Created with GIMP");
+        # from brand.json gimp.defaultComment, empty = no comment
+        f.write('\n# Default image comment (brand.json gimp.defaultComment; empty = none)\n'
+                '(default-image (comment "%s"))\n' % comment.replace('\\', '\\\\').replace('"', '\\"'))
+    # styles: appended to the system-wide gimp.css (loaded after the theme)
+    with open(p('etc', 'gimp.css'), 'a', encoding='utf-8', newline='\n') as f:
+        f.write('\n' + open(os.path.join(d, 'gimp.css'), encoding='utf-8').read())
+    # mouse wheel: Alt+wheel zooms the view, as in other common editors (upstream: tool opacity)
+    ctl = p('etc', 'controllerrc')
+    text = open(ctl, encoding='utf-8').read()
+    for old, new in (('"scroll-up-alt"                 "tools-opacity-increase"', '"scroll-up-alt"                 "view-zoom-in"'),
+                     ('"scroll-down-alt"               "tools-opacity-decrease"', '"scroll-down-alt"               "view-zoom-out"')):
+        if text.count(old) != 1:
+            sys.exit('defaults: etc/controllerrc no longer maps %s' % old.split()[0])
+        text = text.replace(old, new)
+    write_text(ctl, text)
     # product templates first in File > New, GIMP's own templates kept after them
     tpl = p('etc', 'templaterc')
     upstream = open(tpl, encoding='utf-8').read()
@@ -483,20 +503,261 @@ def brand_artwork():
     print('artwork: logo SVGs (About logo, app/file/installer icons are rendered from them), gimp/plug-ins/file .ico')
 
 
-def banner(w, h, credit=True, mode='RGB'):
+# The app draws its start-up progress text (two lines) on the splash image itself, centred around 13/16 of
+# its height and below (app/gui/splash.c). On the splash the artwork therefore keeps out of the bottom
+# SPLASH_TEXT_BAND of the height, so the progress text never covers the "Based on GIMP" credit.
+SPLASH_TEXT_BAND = 0.30
+
+
+def banner(w, h, credit=True, mode='RGB', text_band=0.0):
     im = Image.new('RGB', (w, h), PRIMARY)
     d = ImageDraw.Draw(im)
     d.rectangle((0, h - max(3, h // 40), w, h), fill=ACCENT)
     tag = G.get('tagline_zh_TW') or G.get('tagline') or ''
+    a = h * (1.0 - text_band)                    # the artwork uses the top part [0, a)
+
+    def y(f):
+        return a * f
     if h >= 160 and w >= 2 * h // 3:
-        draw_centered(d, (0, h * 0.14, w, h * 0.56), NAME, int(min(h * 0.26, w * 0.16)), TEXT)
+        draw_centered(d, (0, y(0.14), w, y(0.56)), NAME, int(min(a * 0.26, w * 0.16)), TEXT)
         if tag:
-            draw_centered(d, (0, h * 0.58, w, h * 0.74), tag, int(min(h * 0.08, w * 0.06)), ACCENT)
+            draw_centered(d, (0, y(0.58), w, y(0.74)), tag, int(min(a * 0.08, w * 0.06)), ACCENT)
         if credit:
-            draw_centered(d, (0, h * 0.78, w, h * 0.92), 'Based on GIMP (GPL)', max(10, int(min(h * 0.045, w * 0.035))), (200, 208, 220))
+            draw_centered(d, (0, y(0.78), w, y(0.92)), 'Based on GIMP (GPL)', max(10, int(min(a * 0.045, w * 0.035))), (200, 208, 220))
     elif h >= 48:
         draw_centered(d, (0, 0, w, h * 0.9), NAME, int(min(h * 0.4, w * 0.14)), TEXT)
     return im.convert(mode)
+
+
+# ---------------------------------------------------------------------------------------
+# 5. the other text domains (bundle): the approved zh_TW terms everywhere, missing translations, GLib
+# ---------------------------------------------------------------------------------------
+# The wording table zh_TW-terms.csv is applied to GIMP's main catalog in the source tree (2b). The menus,
+# dialogs and buttons that come from libgimp, the plug-ins, the script / Python plug-ins and GEGL's filters
+# use their own catalogs, so on the finished bundle every one of those is decompiled, given
+#   1. the same table rows (same msgid, context and current wording; GIMP's own domains only),
+#   2. the word rules of zh_TW-term-words.csv: an approved term's word replaced in every text whose
+#      English names that term (each rule must belong to a term of zh_TW-terms.csv and use its new word;
+#      optional: an exception pattern and a list of domains),
+#   3. the translations upstream lacks, from zh_TW-translations.csv (texts the catalogs miss or only
+#      have as outdated "fuzzy" drafts, so the interface shows English there),
+# and compiled again. Each rule must still change something and each added translation must still be
+# missing, otherwise the build stops (upstream changed: review the row). Every change is listed in a
+# review section for staff.
+WORDS_FILE = os.path.join(HERE, 'zh_TW-term-words.csv')
+MISSING_FILE = os.path.join(HERE, 'zh_TW-translations.csv')
+CATALOG_DOMAINS = ('gimp30', 'gimp30-libgimp', 'gimp30-std-plug-ins', 'gimp30-python', 'gimp30-script-fu', 'gegl-0.4')
+CATALOG_SHEET = 'olga-zh_TW-catalogs-review.md'
+_ESC = {'n': '\n', 't': '\t', 'r': '\r', '"': '"', '\\': '\\', 'a': '\a', 'b': '\b', 'f': '\f', 'v': '\v'}
+
+
+def c_unescape(s):
+    return re.sub(r'\\(.)', lambda m: _ESC.get(m.group(1), '\\' + m.group(1)), s)
+
+
+def c_escape(s):
+    s = s.replace('\\', '\\\\').replace('"', '\\"')
+    for k, v in _ESC.items():
+        if k not in '"\\':
+            s = s.replace(v, '\\' + k)
+    return s
+
+
+def strip_mnemonic(s):
+    return re.sub(r'\(_.\)|_(?=\S)', '', s)
+
+
+def entry_strs(entry):
+    """[(field, unescaped value)] of the msgstr / msgstr[n] fields of an entry"""
+    out, kind = [], None
+    for line in entry:
+        m = re.match(r'^(msgctxt|msgid_plural|msgid|msgstr(?:\[\d+\])?)\s+"(.*)"\s*$', line)
+        if m:
+            kind = m.group(1)
+            if kind.startswith('msgstr'):
+                out.append([kind, m.group(2)])
+        elif line.startswith('"') and kind and kind.startswith('msgstr'):
+            out[-1][1] += line.strip()[1:-1]
+    return [(k, c_unescape(v)) for k, v in out]
+
+
+def set_strs(entry, values):
+    """entry with its msgstr fields replaced by values {field: unescaped text}"""
+    out, skip = [], False
+    for line in entry:
+        m = re.match(r'^(msgstr(?:\[\d+\])?)\s+"', line)
+        if m:
+            out.append('%s "%s"' % (m.group(1), c_escape(values[m.group(1)])))
+            skip = True
+            continue
+        if skip and line.startswith('"'):
+            continue
+        skip = False
+        out.append(line)
+    return out
+
+
+def swap_word(s, old, new):
+    """old -> new, leaving text that already reads new alone when old is part of new
+    (e.g. old 矩形選取, new 矩形選取畫面)"""
+    if old not in new:
+        return s.replace(old, new)
+    tok = '\x00'
+    return s.replace(new, tok).replace(old, new).replace(tok, new)
+
+
+def brand_catalogs(bundle, sheet_path):
+    msgunfmt, msgfmt = shutil.which('msgunfmt'), shutil.which('msgfmt')
+    if not msgunfmt or not msgfmt:
+        sys.exit('catalogs: msgunfmt / msgfmt not found')
+    rows = list(csv.DictReader(open(TERMS_FILE, encoding='utf-8-sig', newline='')))
+    words = list(csv.DictReader(open(WORDS_FILE, encoding='utf-8-sig', newline='')))
+    missing = list(csv.DictReader(open(MISSING_FILE, encoding='utf-8-sig', newline='')))
+    errors = []
+    # rules may only spread a term the table already approved, with that term's new word
+    approved = {}
+    for r in rows:
+        approved.setdefault(r['term'], []).append(strip_mnemonic(r['new_zh_TW']))
+    for n, w in enumerate(words, start=2):
+        where = 'zh_TW-term-words.csv line %d (%s)' % (n, w['term'])
+        if w['term'] not in approved:
+            errors.append(where + ': not a term of zh_TW-terms.csv')
+        elif not w['old_zh_TW'] or not any(w['new_zh_TW'] in a for a in approved[w['term']]):
+            errors.append(where + ': %r is not the approved wording of this term' % w['new_zh_TW'])
+        for k in ('msgid_regex', 'except_regex'):
+            try:
+                re.compile(w[k] or '')
+            except re.error as e:
+                errors.append(where + ': %s: %s' % (k, e))
+        for dname in (w['domains'] or '').split():
+            if dname not in CATALOG_DOMAINS:
+                errors.append(where + ': unknown text domain ' + dname)
+    for n, m in enumerate(missing, start=2):
+        where = 'zh_TW-translations.csv line %d (%s)' % (n, m['msgid'])
+        if m['domain'] not in CATALOG_DOMAINS:
+            errors.append(where + ': unknown text domain ' + m['domain'])
+        if n_mnemonics(m['zh_TW']) != min(n_mnemonics(m['msgid']), 1):
+            errors.append(where + ': must carry %s menu mnemonic like (_X)' % ('one' if n_mnemonics(m['msgid']) else 'no'))
+        if sorted(FMT.findall(m['msgid'])) != sorted(FMT.findall(m['zh_TW'])):
+            errors.append(where + ': format specifiers differ from the English text')
+    if errors:
+        sys.exit('catalogs:\n  ' + '\n  '.join(errors))
+
+    locdir = os.path.join(bundle, 'share', 'locale', 'zh_TW', 'LC_MESSAGES')
+    row_index = {(r['context'].strip(), r['msgid']): r for r in rows}
+    word_hits = [0] * len(words)
+    missing_done = [False] * len(missing)
+    changes, added = [], []
+    tmp = os.path.join(bundle, '.olga-catalogs')
+    os.makedirs(tmp, exist_ok=True)
+    for dom in CATALOG_DOMAINS:
+        mo = os.path.join(locdir, dom + '.mo')
+        if not os.path.isfile(mo):
+            sys.exit('catalogs: %s missing from the bundle' % mo)
+        po = os.path.join(tmp, dom + '.po')
+        subprocess.run([msgunfmt, '--no-wrap', '-o', po, mo], check=True)
+        entries = parse_po(open(po, encoding='utf-8').read())
+        have = set()
+        for i, e in enumerate(entries):
+            f = fields(e)
+            mid = c_unescape(f.get('msgid', ''))
+            if not mid:
+                continue
+            ctx = c_unescape(f.get('msgctxt', ''))
+            mids = [mid] + ([c_unescape(f['msgid_plural'])] if 'msgid_plural' in f else [])
+            # rules match the English without menu mnemonics ("Minimal number of _undo levels", "_Export")
+            mids = [x.replace('_', '') for x in mids]
+            have.add((ctx, mid))
+            strs = dict(entry_strs(e))
+            new = dict(strs)
+            how = []
+            # table rows: GIMP's own domains only (GEGL's texts are filter and node names: its "Clone" is not
+            # the Clone Stamp tool)
+            r = row_index.get((ctx, mid)) if dom.startswith('gimp') else None
+            if r:
+                for k, v in new.items():
+                    if v == r['current_zh_TW']:
+                        new[k] = r['new_zh_TW'].strip()
+                        how.append(r['term'])
+            for j, w in enumerate(words):
+                if w['domains'] and dom not in w['domains'].split():
+                    continue
+                if (not any(re.search(w['msgid_regex'], x) for x in mids) or
+                        (w['except_regex'] and any(re.search(w['except_regex'], x) for x in mids))):
+                    continue
+                for k, v in new.items():
+                    v2 = swap_word(v, w['old_zh_TW'], w['new_zh_TW'])
+                    if v2 != v:
+                        new[k] = v2
+                        word_hits[j] += 1
+                        if w['term'] not in how:
+                            how.append(w['term'])
+            if new != strs:
+                for k in new:
+                    if sorted(FMT.findall(new[k])) != sorted(FMT.findall(strs[k])):
+                        sys.exit('catalogs: %s %r: format specifiers changed' % (dom, mid))
+                entries[i] = set_strs(e, new)
+                changes.append((dom, ctx, mid, ' / '.join(strs.values()), ' / '.join(new.values()), ', '.join(how)))
+        for j, m in enumerate(missing):
+            if m['domain'] != dom:
+                continue
+            key = (m['context'].strip(), m['msgid'])
+            if key in have:
+                errors.append('zh_TW-translations.csv: %s %r is translated upstream now: review and remove the row'
+                              % (dom, m['msgid']))
+                continue
+            add = []
+            if key[0]:
+                add.append('msgctxt "%s"' % c_escape(key[0]))
+            add += ['msgid "%s"' % c_escape(m['msgid']), 'msgstr "%s"' % c_escape(m['zh_TW'])]
+            entries.append(add)
+            missing_done[j] = True
+            added.append((dom, m['msgid'], m['zh_TW'], m['where']))
+        with open(po, 'w', encoding='utf-8', newline='\n') as fh:
+            fh.write('\n\n'.join('\n'.join(e) for e in entries) + '\n')
+        res = subprocess.run([msgfmt, '--check-header', '--check-domain', '-o', mo, po], capture_output=True, text=True)
+        if res.returncode != 0:
+            sys.exit('catalogs: msgfmt failed for %s:\n%s' % (dom, res.stderr))
+    shutil.rmtree(tmp)
+    for j, w in enumerate(words):
+        if word_hits[j] == 0:
+            errors.append('zh_TW-term-words.csv line %d (%s %s -> %s): changes nothing any more: review the rule'
+                          % (j + 2, w['term'], w['old_zh_TW'], w['new_zh_TW']))
+    if errors:
+        sys.exit('catalogs:\n  ' + '\n  '.join(errors))
+
+    def cell(s):
+        return (s or '').replace('|', '\\|').replace('\n', ' ')
+    lines = ['', '## 其他文字區域:套用已核准用語 / Approved terms in the other text domains', '',
+             '`zh_TW-terms.csv` 的用語,也套用到外掛插件、對話方塊共用按鈕、Script-Fu / Python 外掛與 GEGL 濾鏡的翻譯'
+             '(規則:`branding/gimp/zh_TW-term-words.csv`)。共 %d 筆。' % len(changes), '',
+             '| 文字區域 Domain | English | 原譯文 Before | 新譯文 After | 用語 Term |', '|---|---|---|---|---|']
+    for dom, ctx, mid, before, after, how in changes:
+        lines.append('| %s | %s | %s | %s | %s |' % (dom, cell(mid), cell(before), cell(after), cell(how)))
+    lines += ['', '## 補上的翻譯 / Translations upstream lacks', '',
+              '上游沒有繁中翻譯(或只有過時草稿)而顯示英文的文字(`branding/gimp/zh_TW-translations.csv`)。共 %d 筆。'
+              % len(added), '', '| 文字區域 Domain | English | 新譯文 New | 位置 Where |', '|---|---|---|---|']
+    for dom, mid, zh, where in added:
+        lines.append('| %s | %s | %s | %s |' % (dom, cell(mid), cell(zh), cell(where)))
+    write_text(sheet_path, '\n'.join(lines) + '\n')
+    print('catalogs: %d texts changed to the approved terms (%d rules), %d translations added, in %s'
+          % (len(changes), len(words), len(added), ', '.join(CATALOG_DOMAINS)))
+
+
+def bundle_glib_catalogs(bundle):
+    """GLib's own messages (file errors in open/save dialogs) in the interface language: upstream's bundling
+    script copies GTK's catalogs but not GLib's."""
+    src = os.path.join(sys.prefix, 'share', 'locale')
+    n = 0
+    for lang in sorted(os.listdir(os.path.join(bundle, 'share', 'locale'))):
+        f = os.path.join(src, lang, 'LC_MESSAGES', 'glib20.mo')
+        d = os.path.join(bundle, 'share', 'locale', lang, 'LC_MESSAGES')
+        if os.path.isfile(f) and os.path.isdir(d):
+            shutil.copyfile(f, os.path.join(d, 'glib20.mo'))
+            n += 1
+    if not os.path.isfile(os.path.join(bundle, 'share', 'locale', 'zh_TW', 'LC_MESSAGES', 'glib20.mo')):
+        sys.exit('bundle: GLib zh_TW catalog not found under ' + src)
+    print('bundle: GLib catalogs added for %d languages' % n)
 
 
 def brand_bundle():
@@ -507,9 +768,10 @@ def brand_bundle():
             if fn == 'gimp-splash.png':
                 f = os.path.join(root, fn)
                 w, h = Image.open(f).size
-                banner(w, h).save(f)
+                banner(w, h, text_band=SPLASH_TEXT_BAND).save(f)
                 n += 1
-    print('bundle: %d splash image(s) replaced' % n)
+    print('bundle: %d splash image(s) replaced (bottom %d%% left free for the progress text)'
+          % (n, round(SPLASH_TEXT_BAND * 100)))
     inst = os.path.join(build, 'build', 'windows', 'installer')
     n = 0
     if os.path.isdir(inst):
@@ -522,6 +784,15 @@ def brand_bundle():
                 banner(w, h, credit=h >= 200, mode=mode).save(f)
                 n += 1
     print('bundle: %d installer splash/banner bitmaps replaced' % n)
+    # the customer guide (Traditional Chinese) at the bundle root, next to NOTICE.txt (installer: patch 0011)
+    guide = open(os.path.join(HERE, 'guide-zh_TW.html'), encoding='utf-8').read()
+    guide = guide.replace('@NAME@', NAME).replace('@ACCENT@', COL['accent'])
+    if '@' in re.sub(r'[\w.+-]+@[\w.-]+', '', guide.replace('@media', '')):
+        sys.exit('bundle: guide-zh_TW.html has an unknown @PLACEHOLDER@')
+    write_text(os.path.join(bundle, 'GUIDE-zh_TW.html'), guide)
+    print('bundle: GUIDE-zh_TW.html')
+    bundle_glib_catalogs(bundle)
+    brand_catalogs(bundle, os.path.join(build, CATALOG_SHEET))
 
 
 if __name__ == '__main__':

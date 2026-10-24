@@ -1,0 +1,26 @@
+term,msgid_regex,old_zh_TW,new_zh_TW,except_regex,domains,why
+Undo,(?i)\bundo,復原,還原,,,"Ctrl+Z is 還原 everywhere: Edit > Undo ""%s"", undo history, preferences, plug-in dialogs"
+Help menu,\b[Hh]elp\b,求助說明,說明,,,Help > Context Help (情境說明); before the general Help rule
+Help menu,\b[Hh]elp\b,求助,說明,,,"the Help button of every plug-in and filter dialog (libgimp), the help system texts"
+Export,(?i)\bexport,匯出,轉存,,,"the Export button, every file format's export dialog, ""(已轉存)"" in the title, the close warning"
+Canvas Size,(?i)\bcanvas,畫布,版面,(?i)apply canvas|canvas texture|texturi[sz]e canvas,gimp30 gimp30-libgimp gimp30-std-plug-ins gimp30-python gimp30-script-fu,"canvas is 版面 (Fit Canvas to Layers, Set Image Canvas Size, canvas boundary, snap to canvas edges); the canvas-texture filter and GEGL (an artist's canvas) keep 畫布"
+Zoom Tool,(?i)\bzoom,遠近縮放,縮放顯示,(?i)^show zoom,gimp30 gimp30-libgimp gimp30-std-plug-ins gimp30-python gimp30-script-fu,"View > Zoom submenu, zoom tool options, zoom texts (not the status-bar options ""Show zoom ..."", which would read 顯示縮放顯示; not GEGL filter parameters)"
+Threshold,(?i)threshold,閾值,臨界值,,,"臨界值 everywhere, including the GEGL filters (Colors > Local Threshold)"
+Deselect,^Select None$,不選取,取消選取,,,undo history entry of Select > None
+Duplicate Layer,(?i)\bduplicate,再製,複製,,,"Duplicate (paths, channels, brushes, presets) reads like Duplicate Layer"
+Flatten Image,(?i)flatten image,整平影像,影像平面化,,,"undo history, export dialogs, scripts"
+Hue/Saturation,^Hue-Saturation$,色相及飽和度,色相/飽和度,,,undo history entry
+Brightness/Contrast,(?i)brightness,亮度及對比,亮度/對比,,,undo history entry and tooltips
+Desaturate,^Desaturate$,去飽和度,去除飽和度,,,undo history entry
+Layer Mask,(?i)layer masks?,圖層遮罩,圖層遮色片,,,"Layer menu items, Add Layer Mask dialog, undo history, messages"
+Rulers,(?i)\brulers?\b,尺規,尺標,,,"View menu tooltip, preferences"
+Lasso,^Free Select$,自由選取,套索,,,name of the tool in other places (undo history / command search)
+Magic Wand,^Fuzzy Select$,模糊選取,魔術棒,,,name of the tool in other places (undo history / command search)
+Free Transform,(?i)^unified transform$,統合變換,任意變形,,,undo history entry
+Rectangular Marquee,^Rectangle Select$,矩形選取,矩形選取畫面,,,undo history entry
+Elliptical Marquee,^Ellipse Select$,橢圓形選取,橢圓選取畫面,,,undo history entry
+Paint Bucket,(?i)^bucket fill$,填色,油漆桶,,,undo history entry
+Eyedropper,Color Picker,取色器,滴管,,,preferences and the colour info window
+Image Size,^Scale Image$,縮放影像,影像尺寸,,,undo history entry
+Shrink Selection,(?i)shrink (selection|radius|channel),縮小,縮減,,,"Shrink Selection dialog, preferences, undo history"
+Grow Selection,(?i)grow (selection|radius|channel),擴大,擴張,,,"Grow Selection dialog, preferences, undo history"
