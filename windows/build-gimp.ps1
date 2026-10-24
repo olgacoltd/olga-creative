@@ -304,7 +304,7 @@ if (-not $NoResynthesizer) {
 }
 $py = "'$(ConvertTo-MsysPath (Join-Path $bdir 'apply-branding.py'))' bundle '$(ConvertTo-MsysPath $bundle)' '$(ConvertTo-MsysPath (Join-Path $RepoRoot 'brand.json'))' '$b'"
 Invoke-Msys $msys "/clang64/bin/python -I $py" $null $M
-foreach ($f in 'COPYING', 'LICENSE', 'NOTICE.txt', "$($g.id).cmd") {
+foreach ($f in 'COPYING', 'LICENSE', 'NOTICE.txt', 'GUIDE-zh_TW.html', "$($g.id).cmd") {
     if (-not (Test-Path (Join-Path $bundle $f))) { throw "missing from the bundle: $f" }
 }
 
@@ -326,6 +326,8 @@ try {
     }
 } finally { $za.Dispose() }
 Write-Output ("  {0:N0} MB" -f ((Get-Item $zip).Length / 1MB))
+# the customer guide (also inside the packages), next to the packages
+Copy-Item -Force (Join-Path $bundle 'GUIDE-zh_TW.html') (Join-Path $dist ("{0}-{1}-guide-zh_TW.html" -f $g.id, $verTag))
 # the zh_TW wording review sheet written by apply-branding.py (for staff, next to the packages)
 $sheet = Join-Path $src 'po\olga-zh_TW-terms-review.md'
 $sheetOut = Join-Path $dist ("{0}-{1}-zh_TW-terms-review.md" -f $g.id, $verTag)
@@ -336,6 +338,10 @@ if (Test-Path $sheet) {
     if (-not $NoResynthesizer -and (Test-Path $rsheet)) {
         [IO.File]::AppendAllText($sheetOut, "`n" + [IO.File]::ReadAllText($rsheet, [Text.Encoding]::UTF8), (New-Object Text.UTF8Encoding($false)))
     }
+    # plus the other text domains (approved terms applied there, translations added) from apply-branding.py bundle
+    $csheet = Join-Path $build 'olga-zh_TW-catalogs-review.md'
+    if (-not (Test-Path $csheet)) { throw "missing: $csheet (apply-branding.py bundle)" }
+    [IO.File]::AppendAllText($sheetOut, [IO.File]::ReadAllText($csheet, [Text.Encoding]::UTF8), (New-Object Text.UTF8Encoding($false)))
 }
 
 if (-not $NoInstaller) {
