@@ -1,0 +1,295 @@
+From 4bd1bee1d0ebf1c5d0897f71fe12e6766f4bade1 Mon Sep 17 00:00:00 2001
+From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
+Date: Sat, 24 Oct 2026 14:00:00 +0800
+Subject: [PATCH 09/10] Turn the input method off where no text is typed
+ (Windows)
+
+With an IME such as Bopomofo in Chinese mode, Windows hands every plain key to the IME, so single-key shortcuts never reach the app. The image window and the docks now detach their input context while the focus is not on a text entry, a text view or the text tool's on-canvas editing, and re-attach it when one of those gets the focus. The user's input mode is kept; dialogs and popups are unchanged.
+---
+ app/tools/gimptexttool-editor.c |  21 ++++
+ app/widgets/gimpwindow.c        | 197 ++++++++++++++++++++++++++++++++
+ app/widgets/gimpwindow.h        |   3 +
+ 3 files changed, 221 insertions(+)
+
+diff --git a/app/tools/gimptexttool-editor.c b/app/tools/gimptexttool-editor.c
+index 0c09b0a..2537aba 100644
+--- a/app/tools/gimptexttool-editor.c
++++ b/app/tools/gimptexttool-editor.c
+@@ -52,6 +52,7 @@
+ #include "widgets/gimptextproxy.h"
+ #include "widgets/gimptextstyleeditor.h"
+ #include "widgets/gimpwidgets-utils.h"
++#include "widgets/gimpwindow.h"
+ 
+ #include "display/gimpdisplay.h"
+ #include "display/gimpdisplayshell.h"
+@@ -196,6 +197,14 @@ gimp_text_tool_editor_start (GimpTextTool *text_tool)
+   GimpTextOptions  *options = GIMP_TEXT_TOOL_GET_OPTIONS (text_tool);
+   GimpDisplayShell *shell   = gimp_display_get_shell (tool->display);
+ 
++  /* olga-creative: the canvas takes text now, so it gets the input method
++   * (gimpwindow.c); before the IM context is focused, which looks it up
++   */
++  g_object_set_data_full (G_OBJECT (text_tool), "olga-text-input-canvas",
++                          g_object_ref (shell->canvas),
++                          (GDestroyNotify) g_object_unref);
++  gimp_window_set_text_input (shell->canvas, TRUE);
++
+   gtk_im_context_set_client_window (text_tool->im_context,
+                                     gtk_widget_get_window (shell->canvas));
+ 
+@@ -373,6 +382,18 @@ gimp_text_tool_editor_halt (GimpTextTool *text_tool)
+   gtk_im_context_focus_out (text_tool->im_context);
+ 
+   gtk_im_context_set_client_window (text_tool->im_context, NULL);
++
++  /* olga-creative: editing ended, single-key shortcuts work on the canvas again */
++  {
++    GtkWidget *canvas = g_object_get_data (G_OBJECT (text_tool),
++                                           "olga-text-input-canvas");
++
++    if (canvas)
++      {
++        gimp_window_set_text_input (canvas, FALSE);
++        g_object_set_data (G_OBJECT (text_tool), "olga-text-input-canvas", NULL);
++      }
++  }
+ }
+ 
+ void
+diff --git a/app/widgets/gimpwindow.c b/app/widgets/gimpwindow.c
+index 5d75cd4..4b76861 100644
+--- a/app/widgets/gimpwindow.c
++++ b/app/widgets/gimpwindow.c
+@@ -23,6 +23,11 @@
+ #include <gtk/gtk.h>
+ #include <gdk/gdkkeysyms.h>
+ 
++#ifdef G_OS_WIN32
++#include <gdk/gdkwin32.h>
++#include <imm.h>
++#endif
++
+ #include "libgimpwidgets/gimpwidgets.h"
+ 
+ #include "widgets-types.h"
+@@ -58,6 +63,17 @@ static gboolean  gimp_window_configure_event (GtkWidget         *widget,
+ static gboolean  gimp_window_key_press_event (GtkWidget         *widget,
+                                               GdkEventKey       *kevent);
+ 
++#ifdef G_OS_WIN32
++static void      gimp_window_set_focus_before (GtkWindow        *window,
++                                               GtkWidget        *focus,
++                                               gpointer          data);
++static void      gimp_window_set_focus_after  (GtkWindow        *window,
++                                               GtkWidget        *focus,
++                                               gpointer          data);
++static void      gimp_window_realize_after    (GtkWidget        *widget,
++                                               gpointer          data);
++#endif
++
+ 
+ G_DEFINE_TYPE_WITH_PRIVATE (GimpWindow, gimp_window, GTK_TYPE_APPLICATION_WINDOW)
+ 
+@@ -92,6 +108,187 @@ static void
+ gimp_window_init (GimpWindow *window)
+ {
+   window->private = gimp_window_get_instance_private (window);
++
++#ifdef G_OS_WIN32
++  /* olga-creative: input method only where text is typed, see below */
++  g_signal_connect (window, "set-focus",
++                    G_CALLBACK (gimp_window_set_focus_before), NULL);
++  g_signal_connect_after (window, "set-focus",
++                          G_CALLBACK (gimp_window_set_focus_after), NULL);
++  g_signal_connect_after (window, "realize",
++                          G_CALLBACK (gimp_window_realize_after), NULL);
++#endif
++}
++
++#ifdef G_OS_WIN32
++/* olga-creative: on Windows an input method (e.g. Bopomofo / Zhuyin in Chinese
++ * mode) takes every plain key typed into a window that has an input context,
++ * so single-key shortcuts (tools, [ ], X, D ...) never arrive while it is on.
++ * The image window and the docks therefore have no input context while the
++ * focus is not on something that takes text: the window's context is
++ * detached then and re-attached (ImmAssociateContextEx) as soon as a text
++ * entry, a text view or the text tool's on-canvas editing gets the focus.
++ * Detaching keeps the user's input mode (Chinese / English) unchanged.
++ * Dialogs and popups are separate windows and keep their input method.
++ * imm32 is loaded at run time (it is always loaded in a GUI process).
++ */
++#define GIMP_WINDOW_TEXT_INPUT_KEY "gimp-window-text-input"
++
++typedef HIMC (WINAPI *GimpImmGetContext)         (HWND hwnd);
++typedef BOOL (WINAPI *GimpImmReleaseContext)     (HWND hwnd,
++                                                  HIMC himc);
++typedef BOOL (WINAPI *GimpImmAssociateContextEx) (HWND  hwnd,
++                                                  HIMC  himc,
++                                                  DWORD flags);
++
++static gboolean
++gimp_window_ime_functions (GimpImmGetContext         *get_context,
++                           GimpImmReleaseContext     *release_context,
++                           GimpImmAssociateContextEx *associate_context)
++{
++  static gboolean                  initialized = FALSE;
++  static GimpImmGetContext         get         = NULL;
++  static GimpImmReleaseContext     release     = NULL;
++  static GimpImmAssociateContextEx associate   = NULL;
++
++  if (! initialized)
++    {
++      HMODULE imm = GetModuleHandleW (L"imm32.dll");
++
++      if (! imm)
++        imm = LoadLibraryW (L"imm32.dll");
++
++      if (imm)
++        {
++          get       = (GimpImmGetContext)
++                      (void *) GetProcAddress (imm, "ImmGetContext");
++          release   = (GimpImmReleaseContext)
++                      (void *) GetProcAddress (imm, "ImmReleaseContext");
++          associate = (GimpImmAssociateContextEx)
++                      (void *) GetProcAddress (imm, "ImmAssociateContextEx");
++        }
++
++      initialized = TRUE;
++    }
++
++  *get_context       = get;
++  *release_context   = release;
++  *associate_context = associate;
++
++  return (get && release && associate);
++}
++
++static gboolean
++gimp_window_wants_text_input (GtkWidget *focus)
++{
++  return (focus &&
++          (GTK_IS_EDITABLE (focus)  ||
++           GTK_IS_TEXT_VIEW (focus) ||
++           g_object_get_data (G_OBJECT (focus), GIMP_WINDOW_TEXT_INPUT_KEY)));
++}
++
++/* Attaching happens before the new focus widget gets its focus-in (its input
++ * method looks up the context there); detaching happens after the old one had
++ * its focus-out, so an unfinished composition is ended properly.
++ */
++static void
++gimp_window_update_ime (GtkWindow *window,
++                        GtkWidget *focus,
++                        gboolean   attach)
++{
++  GimpImmGetContext          get_context;
++  GimpImmReleaseContext      release_context;
++  GimpImmAssociateContextEx  associate_context;
++  GdkWindow                 *gdk_window;
++  HWND                       hwnd;
++  HIMC                       himc;
++  gboolean                   want;
++  gboolean                   has;
++
++  gdk_window = gtk_widget_get_window (GTK_WIDGET (window));
++
++  if (! gdk_window || ! GDK_IS_WIN32_WINDOW (gdk_window) ||
++      ! gimp_window_ime_functions (&get_context, &release_context,
++                                   &associate_context))
++    return;
++
++  hwnd = gdk_win32_window_get_handle (gdk_window);
++
++  if (! hwnd)
++    return;
++
++  want = gimp_window_wants_text_input (focus);
++
++  himc = get_context (hwnd);
++  has  = (himc != NULL);
++
++  if (himc)
++    release_context (hwnd, himc);
++
++  if (attach && want && ! has)
++    associate_context (hwnd, NULL, IACE_DEFAULT);
++  else if (! attach && ! want && has)
++    associate_context (hwnd, NULL, 0);
++}
++
++static void
++gimp_window_set_focus_before (GtkWindow *window,
++                              GtkWidget *focus,
++                              gpointer   data)
++{
++  gimp_window_update_ime (window, focus, TRUE);
++}
++
++static void
++gimp_window_set_focus_after (GtkWindow *window,
++                             GtkWidget *focus,
++                             gpointer   data)
++{
++  gimp_window_update_ime (window, focus, FALSE);
++}
++
++static void
++gimp_window_realize_after (GtkWidget *widget,
++                           gpointer   data)
++{
++  GtkWindow *window = GTK_WINDOW (widget);
++
++  gimp_window_update_ime (window, gtk_window_get_focus (window), TRUE);
++  gimp_window_update_ime (window, gtk_window_get_focus (window), FALSE);
++}
++#endif /* G_OS_WIN32 */
++
++/**
++ * gimp_window_set_text_input:
++ * @widget:     a widget inside a #GimpWindow (e.g. the canvas)
++ * @text_input: whether text is typed into @widget now (e.g. the text tool
++ *              edits a text layer on the canvas)
++ *
++ * olga-creative: tells the window that @widget takes text although it is no
++ * text entry, so it gets the input method while it has the focus (Windows).
++ */
++void
++gimp_window_set_text_input (GtkWidget *widget,
++                            gboolean   text_input)
++{
++  g_return_if_fail (GTK_IS_WIDGET (widget));
++
++  g_object_set_data (G_OBJECT (widget), "gimp-window-text-input",
++                     GINT_TO_POINTER (text_input ? 1 : 0));
++
++#ifdef G_OS_WIN32
++  {
++    GtkWidget *toplevel = gtk_widget_get_toplevel (widget);
++
++    if (GIMP_IS_WINDOW (toplevel))
++      {
++        GtkWindow *window = GTK_WINDOW (toplevel);
++
++        gimp_window_update_ime (window, gtk_window_get_focus (window), TRUE);
++        gimp_window_update_ime (window, gtk_window_get_focus (window), FALSE);
++      }
++  }
++#endif
+ }
+ 
+ static void
+diff --git a/app/widgets/gimpwindow.h b/app/widgets/gimpwindow.h
+index 0a1d8cb..684b501 100644
+--- a/app/widgets/gimpwindow.h
++++ b/app/widgets/gimpwindow.h
+@@ -52,3 +52,6 @@ GType       gimp_window_get_type                 (void);
+ void        gimp_window_set_primary_focus_widget (GimpWindow *window,
+                                                   GtkWidget  *primary_focus);
+ GtkWidget * gimp_window_get_primary_focus_widget (GimpWindow *window);
++
++void        gimp_window_set_text_input           (GtkWidget  *widget,
++                                                  gboolean    text_input);
+-- 
+2.55.0.windows.3
+

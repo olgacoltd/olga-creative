@@ -1,0 +1,34 @@
+From fb1f7ea0c842746ec5601c88503accb0d5859ff6 Mon Sep 17 00:00:00 2001
+From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
+Date: Sat, 24 Oct 2026 14:20:00 +0800
+Subject: [PATCH] Install the customer guide with a Start menu entry
+
+GUIDE-zh_TW.html (written into the bundle by the branding) goes to the install root next to NOTICE.txt and gets its own Start menu entry.
+---
+ build/windows/installer/gimp-setup.iss | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/build/windows/installer/gimp-setup.iss b/build/windows/installer/gimp-setup.iss
+index d121c7d..08d2cea 100644
+--- a/build/windows/installer/gimp-setup.iss
++++ b/build/windows/installer/gimp-setup.iss
+@@ -262,6 +262,7 @@ WelcomeFontSize=12
+ Name: desktopicon; Description: "{cm:AdditionalIconsDesktop}"; GroupDescription: "{cm:AdditionalIcons}"
+ [Icons]
+ Name: "{autoprograms}\{#DISPLAY_NAME}"; Filename: "{app}\bin\{#OLGA_BRAND_ID}.exe"; WorkingDir: "%USERPROFILE%"; Comment: "{#DISPLAY_NAME}"
++Name: "{autoprograms}\{#DISPLAY_NAME} Guide"; Filename: "{app}\GUIDE-zh_TW.html"; Comment: "{#DISPLAY_NAME} Guide"
+ Name: "{autodesktop}\{#DISPLAY_NAME}"; Filename: "{app}\bin\{#OLGA_BRAND_ID}.exe"; WorkingDir: "%USERPROFILE%"; Comment: "{#DISPLAY_NAME}"; Tasks: desktopicon
+ [Run]
+ Filename: "{app}\bin\{#OLGA_BRAND_ID}.exe"; Description: "{cm:LaunchGimp}"; Flags: unchecked postinstall nowait skipifsilent
+@@ -372,6 +373,8 @@ Source: "{#MAIN_BUNDLE}\share\*"; DestDir: "{app}\share"; Excludes: "gimp,icons\
+ Source: "{#MAIN_BUNDLE}\COPYING"; DestDir: "{app}"; Components: {#GIMP_ARCHS}; Flags: {#COMMON_FLAGS}
+ Source: "{#MAIN_BUNDLE}\LICENSE"; DestDir: "{app}"; Components: {#GIMP_ARCHS}; Flags: {#COMMON_FLAGS}
+ Source: "{#MAIN_BUNDLE}\NOTICE.txt"; DestDir: "{app}"; Components: {#GIMP_ARCHS}; Flags: {#COMMON_FLAGS}
++;olga-creative: the customer guide (Traditional Chinese) at the install root
++Source: "{#MAIN_BUNDLE}\GUIDE-zh_TW.html"; DestDir: "{app}"; Components: {#GIMP_ARCHS}; Flags: {#COMMON_FLAGS}
+ 
+ ;Optional arch-neutral files (full install)
+ #ifdef LUA
+-- 
+2.55.0.windows.3
+

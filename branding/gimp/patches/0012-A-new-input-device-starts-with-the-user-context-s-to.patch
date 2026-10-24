@@ -1,0 +1,38 @@
+From e8810770803a8c31a957e5fc13dabd40dfc54670 Mon Sep 17 00:00:00 2001
+From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
+Date: Sat, 24 Oct 2026 14:30:00 +0800
+Subject: [PATCH] A new input device starts with the user context's tool
+
+GIMP gives every input device it has not seen before the paintbrush and switches to it on the first focus, which overrides the starting tool of a new profile's context. A mouse now starts with the user context's tool (the product default from the shipped contextrc); eraser, pen and touch devices keep upstream's choice.
+---
+ app/widgets/gimpdeviceinfo.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/app/widgets/gimpdeviceinfo.c b/app/widgets/gimpdeviceinfo.c
+index ba71dfc..b0bd3b2 100644
+--- a/app/widgets/gimpdeviceinfo.c
++++ b/app/widgets/gimpdeviceinfo.c
+@@ -956,9 +956,18 @@ gimp_device_info_set_default_tool (GimpDeviceInfo *info)
+   g_return_if_fail (GIMP_IS_DEVICE_INFO (info));
+ 
+   tools     = GIMP_TOOL_PRESET (info)->gimp->tool_info_list;
++
++  /* olga-creative: a mouse seen for the first time starts with the tool of
++   * the user context (a new profile's context is the product default, e.g.
++   * rectangle select) instead of always the paintbrush
++   */
+   tool_info =
+-    GIMP_TOOL_INFO (gimp_container_get_child_by_name (tools,
+-                                                      "gimp-paintbrush-tool"));
++    gimp_context_get_tool (gimp_get_user_context (GIMP_TOOL_PRESET (info)->gimp));
++
++  if (! tool_info)
++    tool_info =
++      GIMP_TOOL_INFO (gimp_container_get_child_by_name (tools,
++                                                        "gimp-paintbrush-tool"));
+ 
+   if (info->priv->device)
+     {
+-- 
+2.55.0.windows.3
+

@@ -1,0 +1,32 @@
+From a845b3baa383b78ec67eca9fb41fe2007c39c0c2 Mon Sep 17 00:00:00 2001
+From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
+Date: Sat, 24 Oct 2026 13:30:00 +0800
+Subject: [PATCH] Respect show-welcome-dialog on the first start of a profile
+ or version
+
+Upstream shows the welcome dialog on the first start of a new profile or a new version even when show-welcome-dialog is off. The product default is off, so the dialog only appears when the user enables it; Help > Welcome Dialog still opens it.
+---
+ app/gimp-update.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/app/gimp-update.c b/app/gimp-update.c
+index f4fd5be..dd3a51d 100644
+--- a/app/gimp-update.c
++++ b/app/gimp-update.c
+@@ -543,7 +543,13 @@ gimp_update_auto_check (GimpCoreConfig *config,
+        * The only exception is if they intentionally opened GIMP with
+        * images on start.
+        */
++      /* olga-creative: the product turns the welcome dialog off by default
++       * ("show-welcome-dialog no"), and that setting also covers the first
++       * start of a new profile or a new version (upstream shows the dialog
++       * then regardless). Help > Welcome Dialog still opens it on demand.
++       */
+       if (! gimp->no_interface &&
++          GIMP_GUI_CONFIG (config)->show_welcome_dialog &&
+           (is_update || ! files_loaded))
+         gtk_widget_set_visible (welcome_dialog_create (gimp, is_update),
+                                 TRUE);
+-- 
+2.55.0.windows.3
+

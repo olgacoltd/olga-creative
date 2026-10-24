@@ -1,0 +1,122 @@
+From 3fdb95f412341330da20dbb5d8fba5458f36cca6 Mon Sep 17 00:00:00 2001
+From: olgacoltd <346892864+olgacoltd@users.noreply.github.com>
+Date: Sat, 24 Oct 2026 14:10:00 +0800
+Subject: [PATCH 10/10] Alt-click sets the clone / heal source, Alt picks
+ colors while painting
+
+As in other common image editors: Alt held alone (Ctrl keeps working) sets the source of the Clone, Heal and Perspective Clone tools, and turns the brush tools into the color picker. The eraser keeps Alt for anti-erase. The status bar suggests Alt-click for the source.
+---
+ app/tools/gimppainttool.c  | 10 ++++++++--
+ app/tools/gimpsourcetool.c | 30 ++++++++++++++++++++----------
+ 2 files changed, 28 insertions(+), 12 deletions(-)
+
+diff --git a/app/tools/gimppainttool.c b/app/tools/gimppainttool.c
+index 3be4d3a..8161ff0 100644
+--- a/app/tools/gimppainttool.c
++++ b/app/tools/gimppainttool.c
+@@ -54,6 +54,7 @@
+ 
+ #include "gimpcoloroptions.h"
+ #include "gimppaintoptions-gui.h"
++#include "gimperasertool.h"
+ #include "gimppainttool.h"
+ #include "gimppainttool-paint.h"
+ #include "gimpsourcetool.h"
+@@ -470,8 +471,13 @@ gimp_paint_tool_modifier_key (GimpTool        *tool,
+ 
+   if (paint_tool->pick_colors && ! paint_tool->draw_line)
+     {
+-      if ((state & gimp_get_all_modifiers_mask ()) ==
+-          gimp_get_constrain_behavior_mask ())
++      GdkModifierType mods = state & gimp_get_all_modifiers_mask ();
++
++      /* olga-creative: Alt held alone picks colors too, as in other common
++       * image editors (the eraser keeps Alt for anti-erase)
++       */
++      if (mods == gimp_get_constrain_behavior_mask () ||
++          (mods == GDK_MOD1_MASK && ! GIMP_IS_ERASER_TOOL (tool)))
+         {
+           if (! gimp_color_tool_is_enabled (GIMP_COLOR_TOOL (tool)))
+             {
+diff --git a/app/tools/gimpsourcetool.c b/app/tools/gimpsourcetool.c
+index a922309..ad47e38 100644
+--- a/app/tools/gimpsourcetool.c
++++ b/app/tools/gimpsourcetool.c
+@@ -182,6 +182,20 @@ gimp_source_tool_control (GimpTool       *tool,
+   GIMP_TOOL_CLASS (parent_class)->control (tool, action, display);
+ }
+ 
++/* olga-creative: Alt as well as Ctrl sets the source (Alt+click, as in other
++ * common image editors); Shift must not be held with either.
++ */
++static gboolean
++gimp_source_tool_is_set_source_state (GdkModifierType state)
++{
++  GdkModifierType extend_mask = gimp_get_extend_selection_mask ();
++  GdkModifierType toggle_mask = gimp_get_toggle_behavior_mask ();
++
++  state &= (toggle_mask | extend_mask | GDK_MOD1_MASK);
++
++  return (state == toggle_mask || state == GDK_MOD1_MASK);
++}
++
+ static void
+ gimp_source_tool_button_press (GimpTool            *tool,
+                                const GimpCoords    *coords,
+@@ -194,12 +208,10 @@ gimp_source_tool_button_press (GimpTool            *tool,
+   GimpSourceTool    *source_tool = GIMP_SOURCE_TOOL (tool);
+   GimpSourceCore    *source      = GIMP_SOURCE_CORE (paint_tool->core);
+   GimpSourceOptions *options     = GIMP_SOURCE_TOOL_GET_OPTIONS (tool);
+-  GdkModifierType    extend_mask = gimp_get_extend_selection_mask ();
+-  GdkModifierType    toggle_mask = gimp_get_toggle_behavior_mask ();
+ 
+   gimp_draw_tool_pause (GIMP_DRAW_TOOL (tool));
+ 
+-  if ((state & (toggle_mask | extend_mask)) == toggle_mask)
++  if (gimp_source_tool_is_set_source_state (state))
+     {
+       source->set_source = TRUE;
+ 
+@@ -256,7 +268,7 @@ gimp_source_tool_modifier_key (GimpTool        *tool,
+ 
+   if (gimp_source_core_use_source (GIMP_SOURCE_CORE (paint_tool->core),
+                                    options) &&
+-      key == gimp_get_toggle_behavior_mask ())
++      (key == gimp_get_toggle_behavior_mask () || key == GDK_MOD1_MASK))
+     {
+       gimp_draw_tool_pause (GIMP_DRAW_TOOL (tool));
+ 
+@@ -302,10 +314,7 @@ gimp_source_tool_cursor_update (GimpTool         *tool,
+   if (gimp_source_core_use_source (GIMP_SOURCE_CORE (paint_tool->core),
+                                    options))
+     {
+-      GdkModifierType extend_mask = gimp_get_extend_selection_mask ();
+-      GdkModifierType toggle_mask = gimp_get_toggle_behavior_mask ();
+-
+-      if ((state & (toggle_mask | extend_mask)) == toggle_mask)
++      if (gimp_source_tool_is_set_source_state (state))
+         {
+           cursor = GIMP_CURSOR_CROSSHAIR_SMALL;
+         }
+@@ -352,15 +361,16 @@ gimp_source_tool_oper_update (GimpTool         *tool,
+         {
+           GdkModifierType toggle_mask = gimp_get_toggle_behavior_mask ();
+ 
+-          if (state & toggle_mask)
++          if (state & (toggle_mask | GDK_MOD1_MASK))
+             {
+               gimp_tool_replace_status (tool, display, "%s",
+                                         source_tool->status_set_source);
+             }
+           else
+             {
++              /* olga-creative: suggest Alt-click (Ctrl-click works too) */
+               gimp_tool_replace_status (tool, display, "%s-%s",
+-                                        gimp_get_mod_string (toggle_mask),
++                                        gimp_get_mod_string (GDK_MOD1_MASK),
+                                         source_tool->status_set_source);
+             }
+         }
+-- 
+2.55.0.windows.3
+
