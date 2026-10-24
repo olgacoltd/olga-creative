@@ -1,4 +1,4 @@
-# Default keyboard shortcuts (Photoshop-style), used while the user has no personal shortcutsrc.
+# Default keyboard shortcuts (common image-editor shortcuts), used while the user has no personal shortcutsrc.
 # Derived from PhotoGIMP by Diolinux (https://github.com/Diolinux/PhotoGIMP, commit eca3a8f5,
 # GNU GPL v3). See branding/gimp/defaults/README.md for what was changed.
 
@@ -63,7 +63,7 @@
 (action "tools-convolve" "<Shift>o")
 (action "tools-smudge" "<Shift><Alt>o")
 
-# OLGA ADDITIONS (not from PhotoGIMP): more Photoshop-standard keys. A GIMP default shortcut that one of
+# OLGA ADDITIONS (not from PhotoGIMP): more keys that common image editors use. A GIMP default shortcut that one of
 # these takes over is dropped from its old action by GIMP itself (app/menus/shortcuts-rc.c), e.g. Ctrl+L no
 # longer opens the Layers dialog (F7 does), Ctrl+E no longer re-exports, Ctrl+B/I/U no longer toggle
 # bold/italic/underline while editing text (the text toolbar buttons still do), Ctrl+G no longer opens the
@@ -90,12 +90,12 @@
 (action "view-show-rulers" "<Primary>r" "<Primary><Shift>r")
 (action "view-show-guides" "<Primary>semicolon" "<Primary><Shift>t")
 (action "view-show-grid" "<Primary>apostrophe")
-# Save / Export, the Photoshop habit: Ctrl+Shift+S is "save as JPG/PNG/...", i.e. Export As. The native-format
-# Save As stays in the File menu without a key; Save a Copy (native format) is Ctrl+Alt+S as in Photoshop.
+# Save / Export, the common image-editor habit: Ctrl+Shift+S is "save as JPG/PNG/...", i.e. Export As. The native-format
+# Save As stays in the File menu without a key; Save a Copy (native format) is Ctrl+Alt+S as in other common editors.
 (action "file-export-as" "<Primary><Shift>s" "<Primary><Shift>e" "<Primary><Shift><Alt>w" "<Primary><Shift><Alt>s")
 (action "file-save-as")
 (action "file-save-a-copy" "<Primary><Alt>s")
-# Layer groups as in Photoshop (actions added by patch 0006)
+# Layer groups as in other common editors (actions added by patch 0006)
 (action "layers-group-selected" "<Primary>g")
 (action "layers-ungroup" "<Primary><Shift>g")
 (action "dialogs-gradients")

@@ -1,4 +1,4 @@
-# Default window layout (Photoshop-style): single-window mode, a one-column toolbox on the left,
+# Default window layout (the familiar image-editor layout): single-window mode, a one-column toolbox on the left,
 # tool options / fonts / brushes / patterns / gradients and layers / channels / paths docked on the right.
 # Derived from PhotoGIMP by Diolinux (https://github.com/Diolinux/PhotoGIMP, commit eca3a8f5,
 # GNU GPL v3). See branding/gimp/defaults/README.md for what was changed.
