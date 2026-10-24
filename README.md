@@ -180,7 +180,7 @@ Source patches (`branding/gimp/patches`, all brand-neutral; the values come from
 
 1. `0001` brand options -> `OLGA_BRAND_*` in `config.h` and the resource templates.
 2. `0002` product name instead of GIMP's in window titles, About (name, version, "Based on GIMP ..." credit, link)
-   and `--version` (`OlgaPhoto version 3.2.6-olga2 (based on GIMP 3.2.6)`); application id `tw.olga.OlgaPhoto`;
+   and `--version` (`OlgaPhoto version 3.2.6-olga3 (based on GIMP 3.2.6)`); application id `tw.olga.OlgaPhoto`;
    brand-specific single-instance window class and process mutex, so a real GIMP running next to it never
    receives this app's files (and the installer does not wait for a running GIMP).
 3. `0003` exe version resources (product, vendor, version, credit), branded copies `<id>.exe` /
