@@ -14,7 +14,8 @@
     5. configure            meson, only when build.ninja is missing or the branding changed
     6. compile              ninja (incremental; the build dir is kept)
     7. install + bundle     ninja install runs upstream's bundling script -> <Root>\build\gimp\<id>, then the
-                            Resynthesizer plug-ins are built against it and added, and the bundle-level artwork
+                            Resynthesizer plug-ins are built against it and added (with a zh_TW catalog for
+                            their own gettext domain, resynthesizer-i18n.py), and the bundle-level artwork
                             (splash, About logo) is branded
     8. package              portable zip (+ Inno Setup installer, Inno unpacked per-user under <Root>\tools)
     9. smoke test           smoke-test-gimp.ps1 (console app only, no GUI)
@@ -278,16 +279,19 @@ if (-not $NoResynthesizer) {
     Invoke-Msys $msys ($envSh + "`n" + $rcfg + "ninja -C '$rb' -j $Jobs install") $null $M
     $plugSrc = Join-Path $prefix 'lib\gimp\3.0\plug-ins'
     $plugDst = Join-Path $bundle 'lib\gimp\3.0\plug-ins'
-    $names = @('resynthesizer') + @(Get-ChildItem (Join-Path $rsrc 'outerPlugins') -Filter '*.scm' | ForEach-Object { $_.BaseName })
-    $copied = @()
-    foreach ($n in $names) {
-        $d = Join-Path $plugSrc $n
-        if (Test-Path (Join-Path $d "$n.*")) { Copy-Item -Recurse -Force $d $plugDst; $copied += $n }
+    $names = @(Get-ChildItem (Join-Path $rsrc 'outerPlugins') -Filter '*.scm' | ForEach-Object { $_.BaseName }) + @('resynthesizer')
+    $present = @($names | Where-Object { Test-Path (Join-Path (Join-Path $plugSrc $_) "$_.*") })
+    if ($present -notcontains 'resynthesizer' -or $present -notcontains 'plug-in-heal-selection') {
+        throw "Resynthesizer: plug-ins missing after install (got: $($present -join ', '))"
     }
-    if ($copied -notcontains 'resynthesizer' -or $copied -notcontains 'plug-in-heal-selection') {
-        throw "Resynthesizer: plug-ins missing after install (got: $($copied -join ', '))"
-    }
-    Write-Output "  plug-ins: $($copied -join ', ')"
+    # Traditional Chinese: the plug-ins' own gettext domain, catalog from branding\gimp\resynthesizer-zh_TW.po
+    # installed into each plug-in folder (checked against the texts the installed plug-ins really use)
+    $rsheet = Join-Path $bRoot 'resynthesizer-zh_TW-review.md'
+    Remove-Item -Force $rsheet -ErrorAction SilentlyContinue
+    $py = "'$(ConvertTo-MsysPath (Join-Path $bdir 'resynthesizer-i18n.py'))' '$(ConvertTo-MsysPath $rsrc)' '$(ConvertTo-MsysPath $plugSrc)' '$(ConvertTo-MsysPath $rsheet)' $($present -join ' ')"
+    Invoke-Msys $msys ($envSh + "`n/clang64/bin/python -I $py") $null $M
+    foreach ($n in $present) { Copy-Item -Recurse -Force (Join-Path $plugSrc $n) $plugDst }
+    Write-Output "  plug-ins: $($present -join ', ')"
     foreach ($f in 'COPYING', 'AUTHORS') { Copy-Item (Join-Path $rsrc $f) (Join-Path $plugDst "resynthesizer\$f") }
     $notice = Join-Path $bundle 'NOTICE.txt'
     $nl = "`n"
@@ -324,7 +328,15 @@ try {
 Write-Output ("  {0:N0} MB" -f ((Get-Item $zip).Length / 1MB))
 # the zh_TW wording review sheet written by apply-branding.py (for staff, next to the packages)
 $sheet = Join-Path $src 'po\olga-zh_TW-terms-review.md'
-if (Test-Path $sheet) { Copy-Item -Force $sheet (Join-Path $dist ("{0}-{1}-zh_TW-terms-review.md" -f $g.id, $verTag)) }
+$sheetOut = Join-Path $dist ("{0}-{1}-zh_TW-terms-review.md" -f $g.id, $verTag)
+if (Test-Path $sheet) {
+    Copy-Item -Force $sheet $sheetOut
+    # plus the Resynthesizer section written by resynthesizer-i18n.py
+    $rsheet = Join-Path $bRoot 'resynthesizer-zh_TW-review.md'
+    if (-not $NoResynthesizer -and (Test-Path $rsheet)) {
+        [IO.File]::AppendAllText($sheetOut, "`n" + [IO.File]::ReadAllText($rsheet, [Text.Encoding]::UTF8), (New-Object Text.UTF8Encoding($false)))
+    }
+}
 
 if (-not $NoInstaller) {
     try {

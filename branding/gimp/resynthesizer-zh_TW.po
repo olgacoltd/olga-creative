@@ -1,0 +1,279 @@
+# Traditional Chinese (Taiwan) for the Resynthesizer plug-ins bundled with the GIMP-based app.
+# Gettext domain "resynthesizer3" (the one the plug-ins declare); compiled and installed into every
+# Resynthesizer plug-in folder by resynthesizer-i18n.py during the build. Only used when the interface
+# language is Traditional Chinese.
+# Wording follows GIMP's zh_TW catalog and zh_TW-terms.csv: 選取範圍, 圖層, 色版, 圖樣, 填滿, 修復.
+# The "#." line of each entry says where the text appears (it becomes the review sheet's "Where" column).
+# This file is distributed under the same licence as Resynthesizer (GNU GPL v3 or later).
+msgid ""
+msgstr ""
+"Project-Id-Version: resynthesizer3\n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#. 錯誤訊息(沒有選取範圍時)
+msgid "You must first select a region to heal."
+msgstr "請先選取要修復的區域。"
+
+#. 選單項目 Filters > Enhance;對應常見修圖軟體的「內容感知」修復
+msgid "_Heal Selection..."
+msgstr "修復選取範圍（內容感知）(_H)..."
+
+#. 選單提示
+msgid "Heal the selection from surroundings as if using the heal tool."
+msgstr "用周圍的內容修補選取範圍，效果就像使用修復筆刷。"
+
+#. 對話框參數
+msgid "Context sampling width (pixels)"
+msgstr "周圍取樣寬度（像素）"
+
+#. 對話框參數
+msgid "Sample from"
+msgstr "取樣來源"
+
+#. 「取樣來源」的選項
+msgid "All around"
+msgstr "四周"
+
+#. 「取樣來源」的選項
+msgid "Sides"
+msgstr "左右兩側"
+
+#. 「取樣來源」的選項
+msgid "Above and below"
+msgstr "上方與下方"
+
+#. 對話框參數
+msgid "Filling order"
+msgstr "填補順序"
+
+#. 「填補順序」的選項
+msgid "Random"
+msgstr "隨機"
+
+#. 「填補順序」的選項
+msgid "Inwards towards center"
+msgstr "由外往內（朝中心）"
+
+#. 「填補順序」的選項
+msgid "Outwards from center"
+msgstr "由內往外（從中心）"
+
+#. 錯誤訊息(圖層沒有透明度時)
+msgid "The active layer has no alpha channel to heal."
+msgstr "目前的圖層沒有透明區域（Alpha 色版）可修復。"
+
+#. 選單項目 Filters > Enhance
+msgid "Heal Transparency..."
+msgstr "修復透明區域（內容感知）..."
+
+#. 選單提示
+msgid "Removes alpha channel by synthesis.  Fill outward for edges, inward for holes."
+msgstr "以合成的內容填滿透明區域並移除 Alpha 色版。邊緣請由內往外填補，破洞請由外往內填補。"
+
+#. 選單項目 Filters > Map(完整參數的合成引擎)
+msgid "_Resynthesize..."
+msgstr "重新合成(_R)..."
+
+#. 選單提示(前半句)
+msgid "Use the resynthesizer engine's control panel."
+msgstr "使用 Resynthesizer 合成引擎的控制面板。"
+
+#. 選單提示(後半句,接在前半句後面)
+msgid "Requires plugin 'plug-in-resynthesizer' is installed."
+msgstr "需要已安裝外掛 plug-in-resynthesizer。"
+
+#. 對話框參數(選一個圖層當紋理來源)
+msgid "Texture source"
+msgstr "紋理來源"
+
+#. 對話框參數
+msgid "Randomized filling order"
+msgstr "隨機填補順序"
+
+#. 「隨機填補順序」的選項
+msgid "Random order, without context"
+msgstr "隨機順序，不參考周圍內容"
+
+#. 「隨機填補順序」的選項
+msgid "Random order, with context"
+msgstr "隨機順序，參考周圍內容"
+
+#. 「隨機填補順序」的選項
+msgid "Randomized bands, concentric, inwards"
+msgstr "隨機帶狀，同心圓，由外往內"
+
+#. 「隨機填補順序」的選項
+msgid "Randomized bands, horizontally, inwards (i.e. squeezing from top and bottom)"
+msgstr "隨機帶狀，水平，由外往內（從上下兩端往中間）"
+
+#. 「隨機填補順序」的選項
+msgid "Randomized bands, vertically, inwards (i.e. squeezing from left and right)"
+msgstr "隨機帶狀，垂直，由外往內（從左右兩端往中間）"
+
+#. 「隨機填補順序」的選項
+msgid "Randomized bands, concentric, outwards (e.g. for uncrop)"
+msgstr "隨機帶狀，同心圓，由內往外（例如擴展版面）"
+
+#. 「隨機填補順序」的選項
+msgid "Randomized bands, horizontally, outwards, (i.e. expanding to top and bottom)"
+msgstr "隨機帶狀，水平，由內往外（往上下兩端擴展）"
+
+#. 「隨機填補順序」的選項
+msgid "Randomized bands, vertically, outwards (i.e. expanding to left and right)"
+msgstr "隨機帶狀，垂直，由內往外（往左右兩端擴展）"
+
+#. 「隨機填補順序」的選項
+msgid "Randomized bands, concentric, inwards and outwards (i.e. squeezing in and out a donut)"
+msgstr "隨機帶狀，同心圓，同時往內與往外（環狀區域）"
+
+#. 對話框勾選項
+msgid "Make horizontally tileable"
+msgstr "水平方向可無縫平鋪"
+
+#. 對話框勾選項
+msgid "Make vertically tileable"
+msgstr "垂直方向可無縫平鋪"
+
+#. 對話框勾選項
+msgid "Use texture transfer"
+msgstr "使用紋理轉移"
+
+#. 對話框參數(比對用的權重圖)
+msgid "Input map"
+msgstr "輸入權重圖"
+
+#. 對話框參數(轉移用的權重圖)
+msgid "Output map"
+msgstr "輸出權重圖"
+
+#. 對話框參數
+msgid "Map importance"
+msgstr "權重圖影響程度"
+
+#. 對話框參數(像素)
+msgid "Neighbourhood size"
+msgstr "鄰近範圍大小"
+
+#. 對話框參數
+msgid "Search thoroughness"
+msgstr "搜尋精細度"
+
+#. 對話框參數
+msgid "Sensitivity to outliers"
+msgstr "對離群值的敏感度"
+
+#. 選單項目 Filters > Map
+msgid "Style..."
+msgstr "風格轉換..."
+
+#. 選單提示
+msgid "Transfer style (color and surface) from a chosen source to the selected layer. "
+msgstr "把所選來源的風格（色彩與表面質感）轉移到選取的圖層。"
+
+#. 對話框參數(選一個圖層當風格來源)
+msgid "Source of style"
+msgstr "風格來源"
+
+#. 對話框參數(10–90)
+msgid "Percent transfer"
+msgstr "轉移百分比"
+
+#. 對話框參數
+msgid "Map by"
+msgstr "對應依據"
+
+#. 「對應依據」的選項
+msgid "Color and brightness"
+msgstr "色彩與亮度"
+
+#. 「對應依據」的選項
+msgid "Brightness only"
+msgstr "僅亮度"
+
+#. 選單項目 Filters > Render
+msgid "Texture..."
+msgstr "合成紋理..."
+
+#. 選單提示
+msgid "Create a new image with texture from the current image or selection. Optionally, create image edges suited for further, seamless tiling. "
+msgstr "用目前影像或選取範圍的紋理建立新影像。也可以讓新影像的邊緣適合之後無縫平鋪。"
+
+#. 對話框參數
+msgid "Ratio of size of new image to source selection"
+msgstr "新影像與來源選取範圍的尺寸比例"
+
+#. 對話框勾選項
+msgid "Make new image edges suitable for seamless tiling"
+msgstr "讓新影像的邊緣可無縫平鋪"
+
+#. 錯誤訊息(選到色版時)
+msgid "You must select a layer, not a channel."
+msgstr "請選取圖層，而不是色版。"
+
+#. 選單項目 Filters > Enhance(版面四周合成新內容)
+msgid "Uncrop..."
+msgstr "擴展版面（內容感知）..."
+
+#. 選單提示
+msgid "Enlarge image by synthesizing a border that matches the edge, maintaining perspective.  Works best for small, natural edges. Undo a Crop instead, if possible!"
+msgstr "在影像四周合成與邊緣相符的內容來放大影像，並保持透視。最適合小幅擴展、自然景物的邊緣。如果是剛剛裁切掉的，能復原就先用「復原」！"
+
+#. 對話框參數
+msgid "Percent enlargement"
+msgstr "放大百分比"
+
+#. 對話框勾選項(擴展出來的區域設為不透明)
+msgid "Anti-erase the enlargment"
+msgstr "將擴展區域設為不透明"
+
+#. 選單項目 Edit
+msgid "Fill with Pattern Seamless..."
+msgstr "以圖樣無縫填滿..."
+
+#. 選單提示
+msgid "Seamlessly fill with a pattern using synthesis."
+msgstr "以合成方式用圖樣無縫填滿。"
+
+#. 對話框參數
+msgid "Pattern"
+msgstr "圖樣"
+
+#. 合成引擎的程序名稱(不在選單裡)
+msgid "Resynthesizer engine"
+msgstr "Resynthesizer 合成引擎"
+
+#. 錯誤訊息
+msgid "Resynthesizer failed to get parameters."
+msgstr "Resynthesizer 無法取得參數。"
+
+#. 錯誤訊息
+msgid "The input texture and output image must have the same number of color channels."
+msgstr "輸入紋理與輸出影像的色版數目必須相同。"
+
+#. 錯誤訊息
+msgid "The input and output maps must have the same mode"
+msgstr "輸入與輸出權重圖的模式必須相同"
+
+#. 錯誤訊息
+msgid "The input map should be the same size as the input texture image"
+msgstr "輸入權重圖應與輸入紋理影像同樣大小"
+
+#. 錯誤訊息
+msgid "The output map should be the same size as the output image"
+msgstr "輸出權重圖應與輸出影像同樣大小"
+
+#. 進度列文字
+msgid "synthesizing..."
+msgstr "合成中..."
+
+#. 錯誤訊息
+msgid "The texture source is empty. Does any selection include non-transparent pixels?"
+msgstr "紋理來源是空的。選取範圍內有沒有不透明的像素？"
+
+#. 錯誤訊息
+msgid "The output layer is empty. Does any selection have visible pixels in the active layer?"
+msgstr "輸出圖層是空的。目前圖層的選取範圍內有沒有可見的像素？"

@@ -23,6 +23,8 @@ branding/gimp/patches/            GIMP source patches (brand-neutral: meson opti
 branding/gimp/apply-branding.py   GIMP data-level branding: defaults, zh_TW/en strings, logos/icons, splash, installer art
 branding/gimp/defaults/           Photoshop-style default shortcuts/layout/toolbox/tool options/templates (mostly PhotoGIMP, GPL-3.0)
 branding/gimp/zh_TW-terms.csv     zh_TW wording table (GIMP's term -> the term Photoshop users know), applied at build time
+branding/gimp/resynthesizer-zh_TW.po  zh_TW catalog for the bundled Resynthesizer plug-ins (their gettext domain)
+branding/gimp/resynthesizer-i18n.py   checks that catalog against the installed plug-ins, compiles and installs it
 branding/gimp/deps/               the exiv2 patch upstream GIMP CI applies
 windows/setup-msys2.ps1           non-admin MSYS2 toolchains: UCRT64 for Inkscape (upstream CI's frozen snapshot),
                                   CLANG64 for GIMP (rolling, like upstream GIMP CI)
@@ -31,7 +33,8 @@ windows/smoke-test-inkscape.ps1   headless: --version, profile dir, Chinese SVG 
 windows/build-gimp.ps1            tarballs -> babl/GEGL/exiv2 -> brand -> meson/ninja -> bundle (+ Resynthesizer) -> zip (+ Inno) -> smoke test
 windows/package-gimp-installer.ps1  Inno Setup installer (Inno unpacked per-user under the build root)
 windows/smoke-test-gimp.ps1       headless: --version (en/zh_TW), Python batch PNG -> PNG/JPG, Heal Selection, profile seeding,
-                                  catalogs + zh_TW terms + msgfmt --check, default shortcuts, mascot artwork gone
+                                  catalogs + zh_TW terms + msgfmt --check, default shortcuts, mascot artwork gone,
+                                  Resynthesizer labels in zh_TW and English
 windows/run-detached.ps1          start a build detached from ssh, with keep-awake and a log file
 windows/keepawake-run.ps1         (internal) keep-awake wrapper used by run-detached.ps1
 windows/cleanup.ps1               remove everything the pipeline created on a build machine
@@ -171,7 +174,7 @@ so `ninja install` runs upstream's bundling script, then Inno Setup. Upstream CI
 Outputs: `<root>\dist\<id>-<version>-win64-portable.zip` (unzip anywhere, run `<id>\<id>.cmd` or
 `<id>\bin\<id>.exe`; debug symbols left out) and `<root>\dist\<id>-<version>-setup.exe` (Inno Setup, per-user
 install by default, admin install offered), plus `<root>\dist\<id>-<version>-zh_TW-terms-review.md`, the
-before/after sheet of the zh_TW wording for staff review.
+before/after sheet of the zh_TW wording (and the Resynthesizer terms) for staff review.
 
 Source patches (`branding/gimp/patches`, all brand-neutral; the values come from meson `-Dolga-brand-*`):
 
@@ -215,7 +218,18 @@ Bundled plug-in: **Resynthesizer** (GPL-3.0, <https://github.com/bootchk/resynth
 tag pinned with SHA-256 in `build-gimp.ps1`): Filters > Enhance > Heal Selection (content-aware fill),
 Heal Transparency, Uncrop, Map > Style, Render > Texture and related. It is built against the app's libgimp after
 the bundle is made and copied into `lib\gimp\3.0\plug-ins`; its `COPYING` sits next to it and
-`NOTICE.txt` credits it. Its menu texts are English (it ships no zh_TW translation).
+`NOTICE.txt` credits it.
+
+Its texts are translated the plug-ins' own way: each outer plug-in (a Script-Fu script run by the stand-alone
+interpreter) declares the gettext domain `resynthesizer3` and marks its texts `_"..."`, the C engine returns the
+same domain from `set_i18n()`, and GIMP binds that domain to `<plug-in folder>\locale`. Upstream ships no zh_TW
+catalog, so `branding/gimp/resynthesizer-zh_TW.po` adds one: `resynthesizer-i18n.py` reads the texts the
+installed plug-ins really use (the way Script-Fu reads them), stops the build when a text has no translation,
+an entry is stale, a menu mnemonic or format specifier is lost or `msgfmt --check` fails, and installs the
+compiled catalog as `locale\zh_TW\LC_MESSAGES\resynthesizer3.mo` in every Resynthesizer plug-in folder. Menu
+labels, tooltips, dialog labels and option choices are then Chinese when the interface language is Traditional
+Chinese and stay English otherwise. Its terms are listed in the staff review sheet. Edit the `.po` and rebuild
+to change them.
 
 ## Known issues / not done
 
