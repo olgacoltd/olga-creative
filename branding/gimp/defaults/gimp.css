@@ -1,0 +1,11 @@
+/* Product styles (olga-creative), appended to the system-wide gimp.css. A user's own gimp.css still wins. */
+
+/* The selected row in the docked panels (Layers, Channels, Paths, Undo History ...) stands out clearly in
+   every theme, so it is obvious which layer the next stroke or filter goes to. GIMP's panel widgets have no
+   CSS names of their own; the dock has (GimpDock). */
+GimpDock treeview.view:selected,
+GimpDock treeview.view:selected:focus,
+GimpDock treeview.view:selected:backdrop {
+  background-color: #2f64b0;
+  color: #ffffff;
+}

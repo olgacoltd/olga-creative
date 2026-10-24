@@ -10,6 +10,6 @@
 (pattern "Starfield")
 (gradient "Skyline")
 (palette "Standard")
-(font "Sans-serif")
+(font "Microsoft JhengHei UI Regular")
 
 # end of user context

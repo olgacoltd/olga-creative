@@ -1,0 +1,7 @@
+# GIMP gimp-move-tool options
+# Product default (olga-creative): the Move tool moves the selected layer, not the one under the pointer
+# (Shift while clicking still picks the layer under the pointer).
+
+(move-current yes)
+
+# end of gimp-move-tool options
